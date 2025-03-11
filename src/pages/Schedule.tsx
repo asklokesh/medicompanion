@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useState, useEffect } from "react";
@@ -92,7 +91,12 @@ const Schedule = () => {
           if (logsError) throw logsError;
           
           if (logsData) {
-            setMedicationLogs(logsData);
+            // Convert data to MedicationLog type
+            const typedLogs = logsData.map(log => ({
+              ...log,
+              status: log.status as 'taken' | 'skipped' | 'missed'
+            }));
+            setMedicationLogs(typedLogs);
           }
         } catch (error) {
           toast.error("Failed to load schedule data");
@@ -121,12 +125,12 @@ const Schedule = () => {
 
   const markMedicationAsTaken = async (medicationId: string) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('medication_logs')
         .insert({
           medication_id: medicationId,
           user_id: user?.id,
-          status: 'taken',
+          status: 'taken' as const,
           taken_at: new Date().toISOString()
         });
 
@@ -139,15 +143,19 @@ const Schedule = () => {
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
       
-      const { data } = await supabase
+      const { data: updatedLogs, error: fetchError } = await supabase
         .from('medication_logs')
         .select('*')
         .eq('user_id', user?.id)
         .gte('taken_at', startOfDay.toISOString())
         .lte('taken_at', endOfDay.toISOString());
       
-      if (data) {
-        setMedicationLogs(data);
+      if (!fetchError && updatedLogs) {
+        const typedLogs = updatedLogs.map(log => ({
+          ...log,
+          status: log.status as 'taken' | 'skipped' | 'missed'
+        }));
+        setMedicationLogs(typedLogs);
       }
       
       toast.success("Medication marked as taken!");

@@ -45,20 +45,30 @@ const Profile = () => {
       
       try {
         const { data, error } = await supabase
-          .from('profiles')
+          .from('user_profiles') // Changed from 'profiles' to 'user_profiles'
           .select('*')
           .eq('id', user.id)
           .single();
         
         if (error) throw error;
         
-        setProfile(data);
-        setFormData({
-          full_name: data.full_name || '',
-          phone_number: data.phone_number || '',
-          emergency_contact_name: data.emergency_contact_name || '',
-          emergency_contact_phone: data.emergency_contact_phone || '',
-        });
+        if (data) {
+          setProfile({
+            id: data.id,
+            full_name: data.full_name || '',
+            phone_number: data.phone || '',
+            emergency_contact_name: data.emergency_contact_name || '',
+            emergency_contact_phone: data.emergency_contact_phone || '',
+            user_type: data.user_type as 'senior' | 'caregiver',
+          });
+          
+          setFormData({
+            full_name: data.full_name || '',
+            phone_number: data.phone || '',
+            emergency_contact_name: data.emergency_contact_name || '',
+            emergency_contact_phone: data.emergency_contact_phone || '',
+          });
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast.error('Failed to load profile information');
@@ -81,10 +91,10 @@ const Profile = () => {
     setSaving(true);
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from('user_profiles') // Changed from 'profiles' to 'user_profiles'
         .update({
           full_name: formData.full_name,
-          phone_number: formData.phone_number,
+          phone: formData.phone_number, // Changed to match DB column
           emergency_contact_name: formData.emergency_contact_name,
           emergency_contact_phone: formData.emergency_contact_phone,
         })

@@ -86,7 +86,12 @@ const Dashboard = () => {
           .gte('taken_at', today.toISOString());
         
         if (data && !error) {
-          setMedicationLogs(data);
+          // Convert data to MedicationLog type
+          const typedLogs = data.map(log => ({
+            ...log,
+            status: log.status as 'taken' | 'skipped' | 'missed'
+          }));
+          setMedicationLogs(typedLogs);
         }
       }
     };
@@ -112,19 +117,36 @@ const Dashboard = () => {
       const logs = currentMedications.map(med => ({
         medication_id: med.id,
         user_id: user?.id,
-        status: 'taken',
+        status: 'taken' as const,
         taken_at: new Date().toISOString()
       }));
 
       if (logs.length > 0) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('medication_logs')
           .insert(logs);
 
         if (error) throw error;
         
         toast.success("Medications marked as taken!");
-        setMedicationLogs([...medicationLogs, ...logs as MedicationLog[]]);
+        
+        // Fetch updated logs
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const { data: updatedLogs, error: fetchError } = await supabase
+          .from('medication_logs')
+          .select('*')
+          .eq('user_id', user?.id)
+          .gte('taken_at', today.toISOString());
+          
+        if (!fetchError && updatedLogs) {
+          const typedLogs = updatedLogs.map(log => ({
+            ...log,
+            status: log.status as 'taken' | 'skipped' | 'missed'
+          }));
+          setMedicationLogs(typedLogs);
+        }
       }
     } catch (error) {
       toast.error("Failed to update medication status");

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useMediaQuery } from "@/hooks/use-media-query"; // Updated import path
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
