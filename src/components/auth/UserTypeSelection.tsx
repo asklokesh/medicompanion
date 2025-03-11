@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { UserRound, HeartPulse, HeartHandshake } from "lucide-react";
+import { UserRound, HeartPulse, HeartHandshake, Brain, Bell, Activity, Users, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function UserTypeSelection() {
@@ -24,9 +24,20 @@ export function UserTypeSelection() {
               <div className="p-4 bg-blue-100 rounded-full pill-shadow">
                 <UserRound className="w-10 h-10 text-primary" />
               </div>
-              <div className="text-left">
+              <div className="text-left flex-1">
                 <h2 className="text-2xl font-semibold text-gray-900">I'm a Senior</h2>
                 <p className="text-gray-600 text-lg">Take control of your medications and health</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <Bell className="w-3 h-3" /> Reminders
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <Brain className="w-3 h-3" /> Brain Games
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <Activity className="w-3 h-3" /> Health Tracking
+                  </span>
+                </div>
               </div>
             </div>
           </Card>
@@ -39,9 +50,20 @@ export function UserTypeSelection() {
               <div className="p-4 bg-green-100 rounded-full pill-shadow">
                 <HeartHandshake className="w-10 h-10 text-secondary" />
               </div>
-              <div className="text-left">
+              <div className="text-left flex-1">
                 <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
                 <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <Users className="w-3 h-3" /> Family Connect
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <HeartPulse className="w-3 h-3" /> Health Reports
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                    <Palette className="w-3 h-3" /> Medication Editor
+                  </span>
+                </div>
               </div>
             </div>
           </Card>

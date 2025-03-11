@@ -7,3 +7,51 @@
   margin: 0 auto;
   text-align: center;
 }
+
+/* Emotional design elements */
+.card-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-transition:hover {
+  transform: translateY(-5px);
+}
+
+.heartbeat-effect {
+  animation: heartbeat 1.8s ease-in-out infinite;
+}
+
+.soft-glow {
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.caring-card {
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.caring-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.wellness-icon {
+  filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.4));
+  transition: filter 0.3s ease;
+}
+
+.wellness-icon:hover {
+  filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.6));
+}
+
+.connection-line {
+  stroke-dasharray: 15;
+  animation: dash 20s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
