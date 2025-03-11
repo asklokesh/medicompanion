@@ -1,21 +1,29 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { useAuth } from "@/lib/auth/AuthContext";
 
-export function LoginForm() {
-  const { userType } = useParams();
+export function SignupForm() {
+  const { userType } = useParams<{ userType: 'senior' | 'caregiver' }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await signIn(email, password);
+      await signUp(email, password, userType || 'senior', fullName);
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Signup error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,17 +40,32 @@ export function LoginForm() {
         
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome {userType === 'senior' ? 'Back' : 'Caregiver'}
+            Create Your Account
           </h1>
           <p className="text-xl text-gray-600">
             {userType === 'senior' 
-              ? 'Access your medication dashboard' 
-              : 'Help manage medications for your loved ones'}
+              ? 'Start managing your medications with ease' 
+              : 'Help your loved ones manage their medications'}
           </p>
         </div>
       </div>
 
       <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="fullName" className="text-lg">
+            Full Name
+          </Label>
+          <Input
+            id="fullName"
+            type="text"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="text-lg p-6"
+            placeholder="Enter your full name"
+            required
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-lg">
             Email
@@ -68,25 +91,22 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="text-lg p-6"
-            placeholder="Enter your password"
+            placeholder="Create a password"
             required
           />
         </div>
       </div>
 
       <div className="space-y-4">
-        <Button type="submit" className="w-full text-xl py-6">
-          Sign In
+        <Button type="submit" className="w-full text-xl py-6" disabled={loading}>
+          {loading ? 'Creating Account...' : 'Create Account'}
         </Button>
 
-        <div className="text-center space-y-2">
-          <Button variant="link" asChild className="text-lg">
-            <Link to="/forgot-password">Forgot your password?</Link>
-          </Button>
+        <div className="text-center">
           <p className="text-lg text-gray-600">
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <Button variant="link" asChild className="text-lg">
-              <Link to={`/signup/${userType}`}>Sign up</Link>
+              <Link to={`/login/${userType}`}>Sign in</Link>
             </Button>
           </p>
         </div>

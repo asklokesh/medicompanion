@@ -72,6 +72,104 @@ export type Database = {
           },
         ]
       }
+      connections: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          id: string
+          senior_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          id?: string
+          senior_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          id?: string
+          senior_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medication_logs: {
+        Row: {
+          id: string
+          medication_id: string
+          notes: string | null
+          status: string
+          taken_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          medication_id: string
+          notes?: string | null
+          status: string
+          taken_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          medication_id?: string
+          notes?: string | null
+          status?: string
+          taken_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_logs_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medications: {
+        Row: {
+          created_at: string
+          dosage: string
+          frequency: string
+          id: string
+          name: string
+          notes: string | null
+          time_of_day: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          frequency: string
+          id?: string
+          name: string
+          notes?: string | null
+          time_of_day: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          frequency?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          time_of_day?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category_id: string | null
@@ -222,6 +320,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          date_of_birth: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+          user_type: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
       }
     }
     Views: {
