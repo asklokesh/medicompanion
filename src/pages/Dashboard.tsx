@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEffect, useState } from "react";
@@ -86,10 +85,12 @@ const Dashboard = () => {
           .gte('taken_at', today.toISOString());
         
         if (data && !error) {
-          // Convert data to MedicationLog type
-          const typedLogs = data.map(log => ({
-            ...log,
-            status: log.status as 'taken' | 'skipped' | 'missed'
+          // Convert data to MedicationLog type with proper type casting
+          const typedLogs: MedicationLog[] = data.map(log => ({
+            id: log.id,
+            medication_id: log.medication_id,
+            status: log.status as 'taken' | 'skipped' | 'missed',
+            taken_at: log.taken_at
           }));
           setMedicationLogs(typedLogs);
         }
@@ -141,9 +142,12 @@ const Dashboard = () => {
           .gte('taken_at', today.toISOString());
           
         if (!fetchError && updatedLogs) {
-          const typedLogs = updatedLogs.map(log => ({
-            ...log,
-            status: log.status as 'taken' | 'skipped' | 'missed'
+          // Convert to properly typed MedicationLog objects
+          const typedLogs: MedicationLog[] = updatedLogs.map(log => ({
+            id: log.id,
+            medication_id: log.medication_id,
+            status: log.status as 'taken' | 'skipped' | 'missed',
+            taken_at: log.taken_at
           }));
           setMedicationLogs(typedLogs);
         }

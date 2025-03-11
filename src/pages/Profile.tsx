@@ -1,42 +1,46 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { UserCircle, Bell, Shield, Save } from "lucide-react";
 
 interface Profile {
   id: string;
   full_name: string;
-  phone_number: string;
-  emergency_contact_name: string;
-  emergency_contact_phone: string;
-  user_type: 'senior' | 'caregiver';
+  phone: string;
+  avatar_url?: string;
+  user_type: string;
+  date_of_birth?: string;
+  bio?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const Profile = () => {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    phone_number: '',
-    emergency_contact_name: '',
-    emergency_contact_phone: '',
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [profile, setProfile] = useState<Profile>({
+    id: "",
+    full_name: "",
+    phone: "",
+    user_type: "",
   });
-  const [notifications, setNotifications] = useState({
-    medicationReminders: true,
-    missedDoses: true,
-    refillReminders: true,
-    dailySummary: false,
+  
+  const [notificationSettings, setNotificationSettings] = useState({
+    email: true,
+    push: true,
+    sms: false,
   });
 
   useEffect(() => {
@@ -44,8 +48,9 @@ const Profile = () => {
       if (!user) return;
       
       try {
+        setIsLoading(true);
         const { data, error } = await supabase
-          .from('user_profiles') // Changed from 'profiles' to 'user_profiles'
+          .from('user_profiles')
           .select('*')
           .eq('id', user.id)
           .single();
@@ -55,66 +60,69 @@ const Profile = () => {
         if (data) {
           setProfile({
             id: data.id,
-            full_name: data.full_name || '',
-            phone_number: data.phone || '',
-            emergency_contact_name: data.emergency_contact_name || '',
-            emergency_contact_phone: data.emergency_contact_phone || '',
-            user_type: data.user_type as 'senior' | 'caregiver',
-          });
-          
-          setFormData({
-            full_name: data.full_name || '',
-            phone_number: data.phone || '',
-            emergency_contact_name: data.emergency_contact_name || '',
-            emergency_contact_phone: data.emergency_contact_phone || '',
+            full_name: data.full_name,
+            phone: data.phone,
+            avatar_url: data.avatar_url,
+            user_type: data.user_type,
+            date_of_birth: data.date_of_birth,
+            bio: data.bio,
+            created_at: data.created_at,
+            updated_at: data.updated_at
           });
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
-        toast.error('Failed to load profile information');
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
+
     fetchProfile();
   }, [user]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const saveProfile = async () => {
+  const handleSaveProfile = async () => {
     if (!user) return;
     
-    setSaving(true);
     try {
+      setIsSaving(true);
+      
       const { error } = await supabase
-        .from('user_profiles') // Changed from 'profiles' to 'user_profiles'
+        .from('user_profiles')
         .update({
-          full_name: formData.full_name,
-          phone: formData.phone_number, // Changed to match DB column
-          emergency_contact_name: formData.emergency_contact_name,
-          emergency_contact_phone: formData.emergency_contact_phone,
+          full_name: profile.full_name,
+          phone: profile.phone,
+          // Only include these fields if they exist
+          ...(profile.date_of_birth && { date_of_birth: profile.date_of_birth }),
+          ...(profile.bio && { bio: profile.bio }),
+          ...(profile.avatar_url && { avatar_url: profile.avatar_url })
         })
         .eq('id', user.id);
       
       if (error) throw error;
       
-      toast.success('Profile updated successfully');
+      toast.success("Profile updated successfully");
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     } finally {
-      setSaving(false);
+      setIsSaving(false);
     }
   };
 
-  if (loading) {
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="h-full flex items-center justify-center py-12">
+        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
           <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
         </div>
       </DashboardLayout>
@@ -124,186 +132,193 @@ const Profile = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Your Profile</h1>
-          <p className="text-gray-500 mt-2">
-            Manage your personal information and settings
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
+          {/* Profile Card */}
+          <Card className="w-full md:w-1/3">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCircle className="h-5 w-5 text-primary" />
-                <span>Personal Information</span>
-              </CardTitle>
-              <CardDescription>
-                Update your personal and emergency contact details
-              </CardDescription>
+              <CardTitle>Profile Information</CardTitle>
             </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="flex flex-col items-center space-y-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile.avatar_url || ""} alt={profile.full_name} />
+                  <AvatarFallback className="text-2xl">
+                    {profile.full_name?.charAt(0) || user?.email?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-center">
+                  <h3 className="text-xl font-semibold">{profile.full_name}</h3>
+                  <p className="text-sm text-gray-500 capitalize">{profile.user_type}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
-                  <Input
-                    id="full_name"
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={handleInputChange}
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input 
+                    id="fullName" 
+                    value={profile.full_name}
+                    onChange={(e) => setProfile({...profile, full_name: e.target.value})}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phone_number">Phone Number</Label>
-                  <Input
-                    id="phone_number"
-                    name="phone_number"
-                    value={formData.phone_number}
-                    onChange={handleInputChange}
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    value={profile.phone}
+                    onChange={(e) => setProfile({...profile, phone: e.target.value})}
                   />
                 </div>
-                
-                <Separator className="my-4" />
-                
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
-                  <Input
-                    id="emergency_contact_name"
-                    name="emergency_contact_name"
-                    value={formData.emergency_contact_name}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact_phone">Emergency Contact Phone</Label>
-                  <Input
-                    id="emergency_contact_phone"
-                    name="emergency_contact_phone"
-                    value={formData.emergency_contact_phone}
-                    onChange={handleInputChange}
-                  />
-                </div>
+
+                {profile.user_type === 'senior' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="dob">Date of Birth</Label>
+                    <Input 
+                      id="dob" 
+                      type="date"
+                      value={profile.date_of_birth}
+                      onChange={(e) => setProfile({...profile, date_of_birth: e.target.value})}
+                    />
+                  </div>
+                )}
                 
                 <Button 
-                  type="button" 
-                  className="w-full mt-4" 
-                  onClick={saveProfile}
-                  disabled={saving}
+                  className="w-full" 
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
           
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-primary" />
-                  <span>Notification Preferences</span>
-                </CardTitle>
-                <CardDescription>
-                  Customize how and when you receive notifications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="medication-reminders">Medication Reminders</Label>
-                      <p className="text-sm text-gray-500">
-                        Get reminded when it's time to take your medication
-                      </p>
+          {/* Settings Tabs */}
+          <Card className="w-full md:w-2/3">
+            <CardHeader>
+              <CardTitle>Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="notifications">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                  <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
+                  <TabsTrigger value="account">Account</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="notifications" className="space-y-4 pt-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">Email Notifications</h4>
+                        <p className="text-sm text-gray-500">Receive medication reminders via email</p>
+                      </div>
+                      <Switch 
+                        checked={notificationSettings.email}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({...notificationSettings, email: checked})
+                        }
+                      />
                     </div>
-                    <Switch
-                      id="medication-reminders"
-                      checked={notifications.medicationReminders}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, medicationReminders: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="missed-doses">Missed Doses Alerts</Label>
-                      <p className="text-sm text-gray-500">
-                        Get notified if you miss taking your medication
-                      </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">Push Notifications</h4>
+                        <p className="text-sm text-gray-500">Receive medication reminders as push notifications</p>
+                      </div>
+                      <Switch 
+                        checked={notificationSettings.push}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({...notificationSettings, push: checked})
+                        }
+                      />
                     </div>
-                    <Switch
-                      id="missed-doses"
-                      checked={notifications.missedDoses}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, missedDoses: checked})
-                      }
-                    />
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="refill-reminders">Refill Reminders</Label>
-                      <p className="text-sm text-gray-500">
-                        Get reminded when it's time to refill your prescriptions
-                      </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">SMS Notifications</h4>
+                        <p className="text-sm text-gray-500">Receive medication reminders via text message</p>
+                      </div>
+                      <Switch 
+                        checked={notificationSettings.sms}
+                        onCheckedChange={(checked) => 
+                          setNotificationSettings({...notificationSettings, sms: checked})
+                        }
+                      />
                     </div>
-                    <Switch
-                      id="refill-reminders"
-                      checked={notifications.refillReminders}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, refillReminders: checked})
-                      }
-                    />
                   </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="daily-summary">Daily Summary</Label>
-                      <p className="text-sm text-gray-500">
-                        Receive a daily summary of your medication schedule
-                      </p>
+                </TabsContent>
+                
+                <TabsContent value="accessibility" className="space-y-4 pt-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">Larger Text</h4>
+                        <p className="text-sm text-gray-500">Increase text size for better readability</p>
+                      </div>
+                      <Switch defaultChecked={false} />
                     </div>
-                    <Switch
-                      id="daily-summary"
-                      checked={notifications.dailySummary}
-                      onCheckedChange={(checked) => 
-                        setNotifications({...notifications, dailySummary: checked})
-                      }
-                    />
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">High Contrast</h4>
+                        <p className="text-sm text-gray-500">Enhance visual distinction between elements</p>
+                      </div>
+                      <Switch defaultChecked={false} />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">Screen Reader Support</h4>
+                        <p className="text-sm text-gray-500">Optimize for screen reader compatibility</p>
+                      </div>
+                      <Switch defaultChecked={true} />
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-600">
-                  <Shield className="h-5 w-5" />
-                  <span>Account Security</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Button variant="outline" className="w-full">
-                    Change Password
-                  </Button>
-                  
-                  <Button variant="destructive" className="w-full">
-                    Delete Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </TabsContent>
+                
+                <TabsContent value="account" className="space-y-4 pt-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input id="email" value={user?.email || ""} disabled />
+                      <p className="text-xs text-gray-500">Your email cannot be changed</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Input 
+                        id="bio" 
+                        value={profile.bio || ""}
+                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                        placeholder="Tell us a bit about yourself"
+                      />
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save Account Changes"}
+                    </Button>
+                    
+                    <div className="pt-4 border-t">
+                      <Button 
+                        variant="destructive" 
+                        className="w-full"
+                        onClick={handleSignOut}
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </DashboardLayout>

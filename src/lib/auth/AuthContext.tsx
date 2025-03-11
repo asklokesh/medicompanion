@@ -25,16 +25,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // If user is logged in, redirect to dashboard
+      if (session?.user) {
+        navigate('/dashboard');
+      }
     });
 
     // Listen for changes in auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // If user logged in, redirect to dashboard
+      if (session?.user) {
+        navigate('/dashboard');
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const signUp = async (email: string, password: string, userType: 'senior' | 'caregiver', fullName: string) => {
     try {
@@ -69,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       toast.success('Signed in successfully!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to sign in');
       throw error;
