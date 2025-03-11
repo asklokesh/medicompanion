@@ -1,49 +1,55 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User, UserRound, Heart } from "lucide-react";
+import { UserRound, HeartPulse, HeartHandshake } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function UserTypeSelection() {
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-2">
-        <Heart className="w-12 h-12 mx-auto text-primary float" />
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to MediCompanion</h1>
-        <p className="text-xl text-gray-600">Choose how you'd like to continue</p>
+      <div className="text-center space-y-4">
+        <div className="relative w-16 h-16 mx-auto">
+          <HeartPulse className="w-16 h-16 mx-auto text-primary float absolute" />
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold text-gradient">MediCompanion</h1>
+        <p className="text-xl text-gray-600 max-w-md mx-auto">We care about your health journey every step of the way</p>
       </div>
 
-      <div className="grid gap-4">
-        <Link to="/login/senior">
-          <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <UserRound className="w-8 h-8 text-primary" />
+      <div className="grid gap-6 fade-in" style={{animationDelay: "0.2s"}}>
+        <Link to="/login/senior" className="transform transition-all duration-300 hover:scale-105">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity"></div>
+            <div className="flex items-center space-x-5">
+              <div className="p-4 bg-blue-100 rounded-full pill-shadow">
+                <UserRound className="w-10 h-10 text-primary" />
               </div>
-              <div>
+              <div className="text-left">
                 <h2 className="text-2xl font-semibold text-gray-900">I'm a Senior</h2>
-                <p className="text-gray-600 text-lg">Manage my medications</p>
+                <p className="text-gray-600 text-lg">Take control of your medications and health</p>
               </div>
             </div>
           </Card>
         </Link>
 
-        <Link to="/login/caregiver">
-          <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-secondary/10 rounded-xl">
-                <User className="w-8 h-8 text-secondary" />
+        <Link to="/login/caregiver" className="transform transition-all duration-300 hover:scale-105">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-secondary opacity-0 group-hover:opacity-5 transition-opacity"></div>
+            <div className="flex items-center space-x-5">
+              <div className="p-4 bg-green-100 rounded-full pill-shadow">
+                <HeartHandshake className="w-10 h-10 text-secondary" />
               </div>
-              <div>
+              <div className="text-left">
                 <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
-                <p className="text-gray-600 text-lg">Help manage medications</p>
+                <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
               </div>
             </div>
           </Card>
         </Link>
       </div>
 
-      <div className="text-center">
+      <div className="text-center fade-in" style={{animationDelay: "0.4s"}}>
+        <p className="text-gray-500 mb-4">Join thousands who trust MediCompanion daily</p>
         <Button asChild variant="link" className="text-lg">
           <Link to="/help">Need help getting started?</Link>
         </Button>
@@ -51,4 +57,3 @@ export function UserTypeSelection() {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 type AuthContextType = {
@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Check active sessions and sets the user
@@ -26,8 +27,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // If user is logged in, redirect to dashboard
-      if (session?.user) {
+      // Only redirect to dashboard if we're on the index or auth pages
+      if (session?.user && ["/", "/login/senior", "/login/caregiver", "/signup/senior", "/signup/caregiver"].includes(location.pathname)) {
         navigate('/dashboard');
       }
     });
@@ -37,14 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // If user logged in, redirect to dashboard
-      if (session?.user) {
+      // Only redirect to dashboard if we're on the index or auth pages
+      if (session?.user && ["/", "/login/senior", "/login/caregiver", "/signup/senior", "/signup/caregiver"].includes(location.pathname)) {
         navigate('/dashboard');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const signUp = async (email: string, password: string, userType: 'senior' | 'caregiver', fullName: string) => {
     try {

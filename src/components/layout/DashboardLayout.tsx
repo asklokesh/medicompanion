@@ -3,12 +3,12 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Bell, Pill, Calendar, Camera, Palette, 
-  LogOut, Menu, X, Heart, User, Users
+  LogOut, Menu, X, HeartPulse, User, Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-media-query"; // Updated import path
+import { useMediaQuery } from "@/hooks/use-media-query"; 
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,7 +58,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     {
       name: "Dashboard",
       path: "/dashboard",
-      icon: <Heart className="h-6 w-6" />,
+      icon: <HeartPulse className="h-6 w-6" />,
     },
     {
       name: "My Medications",
@@ -102,8 +102,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+        <div className="flex flex-col items-center">
+          <HeartPulse className="h-16 w-16 text-primary pulse" />
+          <p className="mt-4 text-primary font-medium">Loading your care dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -111,17 +114,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-primary text-white p-4 flex justify-between items-center shadow-md">
+      <header className="sticky top-0 z-50 bg-primary text-white p-4 flex justify-between items-center shadow-md backdrop-blur-lg bg-opacity-95">
         <div className="flex items-center gap-2">
-          <Heart fill="white" className="h-8 w-8" />
-          <h1 className="text-2xl font-bold">MediCompanion</h1>
+          <HeartPulse className="h-8 w-8 fill-white" />
+          <h1 className="text-2xl font-bold bg-clip-text">MediCompanion</h1>
         </div>
         
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Bell className="h-6 w-6 cursor-pointer" />
+            <Bell className="h-6 w-6 cursor-pointer hover:scale-110 transition-transform" />
             {unreadNotifications > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
                 {unreadNotifications}
               </span>
             )}
@@ -148,12 +151,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex flex-col h-full">
             <div className="p-4 border-b">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-primary font-bold">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
                   {userProfile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold">{userProfile?.full_name || 'User'}</span>
-                  <span className="text-xs text-gray-500">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
+                  <span className="text-xs text-gray-500 capitalize">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
                 </div>
               </div>
             </div>
@@ -165,8 +168,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Link 
                       to={item.path} 
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-md hover:bg-gray-100 transition-colors",
-                        location.pathname === item.path && "bg-primary/10 text-primary font-medium"
+                        "flex items-center gap-3 p-3 rounded-md transition-colors",
+                        location.pathname === item.path 
+                          ? "bg-primary/10 text-primary font-medium" 
+                          : "hover:bg-gray-100 text-gray-700"
                       )}
                     >
                       {item.icon}
@@ -180,7 +185,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="p-4 border-t">
               <Button 
                 variant="outline" 
-                className="w-full flex items-center gap-2 text-gray-700"
+                className="w-full flex items-center gap-2 text-gray-700 hover:bg-gray-100"
                 onClick={handleSignOut}
               >
                 <LogOut className="h-4 w-4" />
@@ -192,20 +197,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Mobile menu */}
         {isMobile && isMenuOpen && (
-          <div className="fixed inset-0 z-40 bg-black/60" onClick={closeMenu}>
+          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={closeMenu}>
             <div 
-              className="fixed top-16 right-0 bottom-0 w-64 bg-white shadow-xl p-4"
+              className="fixed top-16 right-0 bottom-0 w-64 bg-white shadow-xl p-4 transition-transform transform-gpu"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col h-full">
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-primary font-bold">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
                       {userProfile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                     </div>
                     <div className="flex flex-col">
                       <span className="font-semibold">{userProfile?.full_name || 'User'}</span>
-                      <span className="text-xs text-gray-500">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
+                      <span className="text-xs text-gray-500 capitalize">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
                     </div>
                   </div>
                 </div>
@@ -217,8 +222,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         <Link 
                           to={item.path} 
                           className={cn(
-                            "flex items-center gap-3 p-3 rounded-md hover:bg-gray-100 transition-colors",
-                            location.pathname === item.path && "bg-primary/10 text-primary font-medium"
+                            "flex items-center gap-3 p-3 rounded-md transition-colors",
+                            location.pathname === item.path 
+                              ? "bg-primary/10 text-primary font-medium" 
+                              : "hover:bg-gray-100 text-gray-700"
                           )}
                         >
                           {item.icon}
@@ -245,7 +252,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 animate-fadeIn">
           {children}
         </main>
       </div>
