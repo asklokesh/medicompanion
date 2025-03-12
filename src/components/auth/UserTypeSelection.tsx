@@ -7,7 +7,14 @@ import { useEffect, useState } from "react";
 import { getAppConfig, AppFeatures } from "@/services/configService";
 
 export function UserTypeSelection() {
-  const [features, setFeatures] = useState<AppFeatures>({ caregiver_login: false });
+  const [features, setFeatures] = useState<AppFeatures>({
+    caregiver_login: false,
+    medication_reminder: true,
+    health_tracking: true,
+    brain_games: true,
+    emergency_features: false,
+    family_connection: false
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,15 +67,21 @@ export function UserTypeSelection() {
                 <h2 className="text-2xl font-semibold text-gray-900">I'm a Senior</h2>
                 <p className="text-gray-600 text-lg">Take control of your medications and health</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    <Bell className="w-3 h-3" /> Reminders
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <Brain className="w-3 h-3" /> Brain Games
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    <Activity className="w-3 h-3" /> Health Tracking
-                  </span>
+                  {features.medication_reminder && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <Bell className="w-3 h-3" /> Reminders
+                    </span>
+                  )}
+                  {features.brain_games && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <Brain className="w-3 h-3" /> Brain Games
+                    </span>
+                  )}
+                  {features.health_tracking && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <Activity className="w-3 h-3" /> Health Tracking
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -87,9 +100,11 @@ export function UserTypeSelection() {
                   <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
                   <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      <Users className="w-3 h-3" /> Family Connect
-                    </span>
+                    {features.family_connection && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <Users className="w-3 h-3" /> Family Connect
+                      </span>
+                    )}
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                       <HeartPulse className="w-3 h-3" /> Health Reports
                     </span>
