@@ -27,6 +27,74 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
   try {
     console.log(`Searching for pills with query: ${searchQuery}`);
     
+    // Try multiple API endpoints for more comprehensive results
+    const results = await Promise.all([
+      searchRxNavAPI(searchQuery),
+      // In a real app, you might add other API calls here
+      // searchFDAAPI(searchQuery),
+      // searchOpenFDAAPI(searchQuery)
+    ]);
+    
+    // Combine results from all APIs, removing duplicates by rxcui
+    let combinedResults = results.flat();
+    
+    // Remove duplicates based on rxcui
+    const uniqueResults = combinedResults.reduce((acc, current) => {
+      const existingItem = acc.find(item => item.rxcui === current.rxcui);
+      if (!existingItem && current.rxcui) {
+        acc.push(current);
+      }
+      return acc;
+    }, [] as PillMatch[]);
+    
+    console.log(`Found ${uniqueResults.length} unique results from APIs`);
+    
+    // If we don't get enough results, add fallback data
+    if (uniqueResults.length < 3) {
+      console.log('Using fallback results due to insufficient API results');
+      const fallbackResults = getFallbackResults(searchQuery);
+      
+      // Combine API results with fallbacks, prioritizing API results
+      const finalResults = [...uniqueResults, ...fallbackResults].slice(0, 5);
+      console.log(`Returning ${finalResults.length} final results`);
+      
+      // Log activity to Supabase if connected
+      try {
+        await logActivity('pill_search', searchQuery, finalResults.length > 0);
+      } catch (e) {
+        console.error("Failed to log search activity:", e);
+        // Non-critical error, don't block the search results
+      }
+      
+      return finalResults;
+    }
+    
+    // If we have enough results from the API
+    // Log activity to Supabase if connected
+    try {
+      await logActivity('pill_search', searchQuery, uniqueResults.length > 0);
+    } catch (e) {
+      console.error("Failed to log search activity:", e);
+      // Non-critical error, don't block the search results
+    }
+    
+    return uniqueResults.slice(0, 5); // Limit to 5 results for UI
+  } catch (error) {
+    console.error("Error searching pills:", error);
+    toast({
+      title: "Search Error",
+      description: "Unable to search for medications. Please try again later.",
+      variant: "destructive"
+    });
+    return getFallbackResults(searchQuery);
+  }
+}
+
+/**
+ * Search the RxNav API for medications
+ */
+async function searchRxNavAPI(searchQuery: string): Promise<PillMatch[]> {
+  try {
     // RxNorm API (part of NLM/NIH) for medication information
     const response = await fetch(
       `https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(searchQuery)}`
@@ -40,8 +108,14 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
     const data = await response.json();
     console.log('RxNav API response:', data);
     
+    // Check if we have valid data
+    if (!data.drugGroup || !data.drugGroup.conceptGroup) {
+      console.log('No valid data in RxNav response');
+      return [];
+    }
+    
     // Parse the response into our PillMatch format
-    const conceptGroups = data.drugGroup?.conceptGroup || [];
+    const conceptGroups = data.drugGroup.conceptGroup || [];
     let results: PillMatch[] = [];
     
     // Process and extract medication information
@@ -54,39 +128,18 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
             appearance: prop.synonym?.[0] || 'Information not available',
             purpose: group.tty || 'Medication',
             rxcui: prop.rxcui,
-            // Assign a random color for UI display (in a real app, this would be based on actual pill color)
+            // Assign a color for UI display (in a real app, would be based on actual pill color)
             imageColor: getRandomPillColor()
           });
         }
       }
     }
     
-    console.log('Parsed pill results:', results);
-    
-    // If we don't get results from RxNav or get fewer than 3, add fallback data
-    if (results.length < 3) {
-      console.log('Using fallback results due to insufficient API results');
-      const fallbackResults = getFallbackResults(searchQuery);
-      results = [...results, ...fallbackResults].slice(0, 5);
-    }
-    
-    // Log activity to Supabase if connected
-    try {
-      await logActivity('pill_search', searchQuery, results.length > 0);
-    } catch (e) {
-      console.error("Failed to log search activity:", e);
-      // Non-critical error, don't block the search results
-    }
-    
+    console.log(`RxNav API returned ${results.length} results`);
     return results;
   } catch (error) {
-    console.error("Error searching pills:", error);
-    toast({
-      title: "Search Error",
-      description: "Unable to search for medications. Please try again later.",
-      variant: "destructive"
-    });
-    return getFallbackResults(searchQuery);
+    console.error("Error with RxNav API:", error);
+    return []; // Return empty array for this API, other APIs or fallbacks may still work
   }
 }
 
