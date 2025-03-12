@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -147,24 +146,32 @@ export async function identifyPillFromImage(imageFile: File): Promise<PillMatch[
   }
 }
 
+// Define the type for activity data to match Supabase function parameters
+type ActivityData = {
+  activity_type: string;
+  user_id?: string;
+  query?: string;
+  found_results?: boolean;
+  timestamp_param?: string;
+};
+
 // Helper function to log any pill-related activity
 async function logActivity(activityType: string, query?: string, foundResults?: boolean) {
   try {
     const user = supabase.auth.getUser();
     
-    // Create the activity object with only valid properties
-    const activityData: Record<string, any> = {
+    // Create the activity data object with the correct type
+    const activityData: ActivityData = {
       activity_type: activityType,
       timestamp_param: new Date().toISOString()
     };
     
-    // Only add user_id if we have a user
+    // Only add optional properties if they're provided
     const { data: userData } = await user;
     if (userData?.user?.id) {
       activityData.user_id = userData.user.id;
     }
     
-    // Only add these if they're provided
     if (query !== undefined) {
       activityData.query = query;
     }
@@ -173,7 +180,7 @@ async function logActivity(activityType: string, query?: string, foundResults?: 
       activityData.found_results = foundResults;
     }
     
-    // Call the stored procedure with our parameters
+    // Call the stored procedure with our typed parameters
     const { error } = await supabase.rpc('insert_user_activity', activityData);
     
     if (error) {
