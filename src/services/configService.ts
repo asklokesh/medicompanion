@@ -2,7 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppFeatures = {
-  caregiver_login: boolean;
   medication_reminder: boolean;
   health_tracking: boolean;
   brain_games: boolean;
@@ -20,7 +19,6 @@ export type AppConfig = {
 
 export const defaultAppConfig: AppConfig = {
   features: {
-    caregiver_login: false,
     medication_reminder: true,
     health_tracking: true,
     brain_games: true,
@@ -61,7 +59,7 @@ export const getAppConfig = async (): Promise<AppConfig> => {
     let currentTheme = defaultAppConfig.currentTheme;
     
     if (!themeError && themeData) {
-      // Fix: Safely access the theme property from the JSON value
+      // Safely access the theme property from the JSON value
       const themeValue = themeData.value as { theme?: string };
       currentTheme = themeValue?.theme as AppTheme || defaultAppConfig.currentTheme;
     }

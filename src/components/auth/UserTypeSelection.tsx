@@ -1,14 +1,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { UserRound, HeartPulse, HeartHandshake, Brain, Bell, Activity, Users, Palette } from "lucide-react";
+import { UserRound, HeartPulse, Brain, Bell, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAppConfig, AppFeatures } from "@/services/configService";
 
 export function UserTypeSelection() {
   const [features, setFeatures] = useState<AppFeatures>({
-    caregiver_login: false,
     medication_reminder: true,
     health_tracking: true,
     brain_games: true,
@@ -57,14 +56,14 @@ export function UserTypeSelection() {
 
       <div className="grid gap-6 fade-in" style={{animationDelay: "0.2s"}}>
         <Link to="/login/senior" className="transform transition-all duration-300 hover:scale-105">
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group rounded-3xl">
             <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity"></div>
             <div className="flex items-center space-x-5">
               <div className="p-4 bg-blue-100 rounded-full pill-shadow">
                 <UserRound className="w-10 h-10 text-primary" />
               </div>
               <div className="text-left flex-1">
-                <h2 className="text-2xl font-semibold text-gray-900">I'm a Senior</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">Get Started</h2>
                 <p className="text-gray-600 text-lg">Take control of your medications and health</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {features.medication_reminder && (
@@ -87,36 +86,6 @@ export function UserTypeSelection() {
             </div>
           </Card>
         </Link>
-
-        {features.caregiver_login && (
-          <Link to="/login/caregiver" className="transform transition-all duration-300 hover:scale-105">
-            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
-              <div className="absolute inset-0 bg-gradient-secondary opacity-0 group-hover:opacity-5 transition-opacity"></div>
-              <div className="flex items-center space-x-5">
-                <div className="p-4 bg-green-100 rounded-full pill-shadow">
-                  <HeartHandshake className="w-10 h-10 text-secondary" />
-                </div>
-                <div className="text-left flex-1">
-                  <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
-                  <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {features.family_connection && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        <Users className="w-3 h-3" /> Family Connect
-                      </span>
-                    )}
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      <HeartPulse className="w-3 h-3" /> Health Reports
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      <Palette className="w-3 h-3" /> Medication Editor
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Link>
-        )}
       </div>
 
       <div className="text-center fade-in" style={{animationDelay: "0.4s"}}>

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, userType: 'senior' | 'caregiver', fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       
       // Only redirect to dashboard if we're on the index or auth pages
-      if (session?.user && ["/", "/login/senior", "/login/caregiver", "/signup/senior", "/signup/caregiver"].includes(location.pathname)) {
+      if (session?.user && ["/", "/login/senior", "/signup/senior"].includes(location.pathname)) {
         navigate('/dashboard');
       }
     });
@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       
       // Only redirect to dashboard if we're on the index or auth pages
-      if (session?.user && ["/", "/login/senior", "/login/caregiver", "/signup/senior", "/signup/caregiver"].includes(location.pathname)) {
+      if (session?.user && ["/", "/login/senior", "/signup/senior"].includes(location.pathname)) {
         navigate('/dashboard');
       }
     });
@@ -47,14 +47,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 
-  const signUp = async (email: string, password: string, userType: 'senior' | 'caregiver', fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            user_type: userType,
+            user_type: 'senior',
             full_name: fullName,
           },
         },

@@ -18,7 +18,6 @@ interface Profile {
   full_name: string;
   phone: string;
   avatar_url?: string;
-  user_type: string;
   date_of_birth?: string;
   bio?: string;
   created_at?: string;
@@ -34,7 +33,6 @@ const Profile = () => {
     id: "",
     full_name: "",
     phone: "",
-    user_type: "",
   });
   
   const [notificationSettings, setNotificationSettings] = useState({
@@ -63,7 +61,6 @@ const Profile = () => {
             full_name: data.full_name,
             phone: data.phone,
             avatar_url: data.avatar_url,
-            user_type: data.user_type,
             date_of_birth: data.date_of_birth,
             bio: data.bio,
             created_at: data.created_at,
@@ -134,7 +131,7 @@ const Profile = () => {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Profile Card */}
-          <Card className="w-full md:w-1/3">
+          <Card className="w-full md:w-1/3 rounded-3xl shadow-md">
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
             </CardHeader>
@@ -148,7 +145,7 @@ const Profile = () => {
                 </Avatar>
                 <div className="text-center">
                   <h3 className="text-xl font-semibold">{profile.full_name}</h3>
-                  <p className="text-sm text-gray-500 capitalize">{profile.user_type}</p>
+                  <p className="text-sm text-gray-500">Senior</p>
                 </div>
               </div>
               
@@ -159,6 +156,7 @@ const Profile = () => {
                     id="fullName" 
                     value={profile.full_name}
                     onChange={(e) => setProfile({...profile, full_name: e.target.value})}
+                    className="h-12 text-base"
                   />
                 </div>
                 
@@ -168,23 +166,23 @@ const Profile = () => {
                     id="phone" 
                     value={profile.phone}
                     onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                    className="h-12 text-base"
                   />
                 </div>
 
-                {profile.user_type === 'senior' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="dob">Date of Birth</Label>
-                    <Input 
-                      id="dob" 
-                      type="date"
-                      value={profile.date_of_birth}
-                      onChange={(e) => setProfile({...profile, date_of_birth: e.target.value})}
-                    />
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Input 
+                    id="dob" 
+                    type="date"
+                    value={profile.date_of_birth}
+                    onChange={(e) => setProfile({...profile, date_of_birth: e.target.value})}
+                    className="h-12 text-base"
+                  />
+                </div>
                 
                 <Button 
-                  className="w-full" 
+                  className="w-full rounded-xl h-12 text-base"
                   onClick={handleSaveProfile}
                   disabled={isSaving}
                 >
@@ -195,7 +193,7 @@ const Profile = () => {
           </Card>
           
           {/* Settings Tabs */}
-          <Card className="w-full md:w-2/3">
+          <Card className="w-full md:w-2/3 rounded-3xl shadow-md">
             <CardHeader>
               <CardTitle>Settings</CardTitle>
             </CardHeader>
@@ -282,7 +280,12 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" value={user?.email || ""} disabled />
+                      <Input 
+                        id="email" 
+                        value={user?.email || ""} 
+                        disabled 
+                        className="h-12 text-base"
+                      />
                       <p className="text-xs text-gray-500">Your email cannot be changed</p>
                     </div>
                     
@@ -293,12 +296,13 @@ const Profile = () => {
                         value={profile.bio || ""}
                         onChange={(e) => setProfile({...profile, bio: e.target.value})}
                         placeholder="Tell us a bit about yourself"
+                        className="h-12 text-base"
                       />
                     </div>
                     
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full rounded-xl h-12 text-base"
                       onClick={handleSaveProfile}
                       disabled={isSaving}
                     >
@@ -308,7 +312,7 @@ const Profile = () => {
                     <div className="pt-4 border-t">
                       <Button 
                         variant="destructive" 
-                        className="w-full"
+                        className="w-full rounded-xl h-12 text-base"
                         onClick={handleSignOut}
                       >
                         Sign Out

@@ -8,11 +8,10 @@ import { useState, useEffect } from "react";
 import { getAppConfig, updateAppFeatures, AppFeatures } from "@/services/configService";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { Shield, Settings, Package, Bell, Activity, Brain, Heart, Users } from "lucide-react";
+import { Shield, Settings, Package, Bell, Activity, Brain, Heart } from "lucide-react";
 
 const AdminConfig = () => {
   const [features, setFeatures] = useState<AppFeatures>({
-    caregiver_login: false,
     medication_reminder: true,
     health_tracking: true,
     brain_games: true,
@@ -70,12 +69,6 @@ const AdminConfig = () => {
 
   const featureConfigs = [
     {
-      id: 'caregiver_login',
-      name: 'Caregiver Login',
-      description: 'Allow caregivers to log in and manage seniors\' medications',
-      icon: <Users className="h-5 w-5 text-primary" />
-    },
-    {
       id: 'medication_reminder',
       name: 'Medication Reminders',
       description: 'Enable push notifications and reminders for medications',
@@ -103,7 +96,7 @@ const AdminConfig = () => {
       id: 'family_connection',
       name: 'Family Connection',
       description: 'Allow seniors to connect with family members',
-      icon: <Users className="h-5 w-5 text-blue-500" />
+      icon: <Activity className="h-5 w-5 text-blue-500" />
     }
   ];
 
@@ -128,7 +121,7 @@ const AdminConfig = () => {
           </TabsList>
           
           <TabsContent value="features">
-            <Card>
+            <Card className="rounded-3xl shadow-md">
               <CardHeader>
                 <CardTitle>Feature Flags</CardTitle>
                 <CardDescription>
@@ -177,7 +170,7 @@ const AdminConfig = () => {
           </TabsContent>
           
           <TabsContent value="settings">
-            <Card>
+            <Card className="rounded-3xl shadow-md">
               <CardHeader>
                 <CardTitle>System Settings</CardTitle>
                 <CardDescription>

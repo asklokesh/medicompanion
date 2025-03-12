@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Bell, Pill, Calendar, Camera, Palette, 
-  LogOut, Menu, X, HeartPulse, User, Users
+  LogOut, Menu, X, HeartPulse, User, Activity, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -66,9 +66,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: <Pill className="h-6 w-6" />,
     },
     {
-      name: "Schedule",
-      path: "/schedule",
-      icon: <Calendar className="h-6 w-6" />,
+      name: "Reminders",
+      path: "/reminders",
+      icon: <Bell className="h-6 w-6" />,
+    },
+    {
+      name: "Health Tracking",
+      path: "/health-tracking",
+      icon: <Activity className="h-6 w-6" />,
+    },
+    {
+      name: "Brain Games",
+      path: "/brain-games",
+      icon: <Brain className="h-6 w-6" />,
     },
     {
       name: "Identify Pill",
@@ -79,11 +89,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       name: "Theme",
       path: "/theme",
       icon: <Palette className="h-6 w-6" />,
-    },
-    {
-      name: userProfile?.user_type === 'senior' ? "Connect to Caregiver" : "My Seniors",
-      path: "/connect",
-      icon: <Users className="h-6 w-6" />,
     },
     {
       name: "Profile",
@@ -156,7 +161,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold">{userProfile?.full_name || 'User'}</span>
-                  <span className="text-xs text-gray-500 capitalize">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
+                  <span className="text-xs text-gray-500">Senior</span>
                 </div>
               </div>
             </div>
@@ -210,7 +215,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-semibold">{userProfile?.full_name || 'User'}</span>
-                      <span className="text-xs text-gray-500 capitalize">{userProfile?.user_type === 'senior' ? 'Senior' : 'Caregiver'}</span>
+                      <span className="text-xs text-gray-500">Senior</span>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { HeartPulse, Pill, Brain, Bell, Users } from "lucide-react";
+import { HeartPulse, Pill, Brain, Bell, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEffect, useState } from "react";
@@ -17,7 +17,6 @@ export function BottomNavigation() {
   const location = useLocation();
   const { user } = useAuth();
   const [features, setFeatures] = useState<AppFeatures | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
   
   useEffect(() => {
     const loadConfig = async () => {
@@ -57,10 +56,10 @@ export function BottomNavigation() {
       featureFlag: "brain_games",
     },
     {
-      name: "Family",
-      path: "/connect",
-      icon: <Users className="h-6 w-6" />,
-      featureFlag: "family_connection",
+      name: "Health",
+      path: "/health-tracking",
+      icon: <Activity className="h-6 w-6" />,
+      featureFlag: "health_tracking",
     },
   ];
 
