@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,7 @@ import CareNotes from "./pages/CareNotes";
 import Alerts from "./pages/Alerts";
 import VideoChat from "./pages/VideoChat";
 import HealthReports from "./pages/HealthReports";
+import AdminConfig from "./pages/AdminConfig";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,9 @@ const App = () => (
               <Route path="/health-tracking" element={<HealthTracking />} />
               <Route path="/connect" element={<CaregiverConnect />} />
               <Route path="/theme" element={<ThemeSettings />} />
+              
+              {/* Admin route */}
+              <Route path="/admin/config" element={<AdminConfig />} />
               
               {/* Caregiver-specific routes */}
               <Route path="/adherence-tracking" element={<AdherenceTracking />} />

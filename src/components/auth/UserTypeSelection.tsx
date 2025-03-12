@@ -3,8 +3,40 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { UserRound, HeartPulse, HeartHandshake, Brain, Bell, Activity, Users, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getAppConfig, AppFeatures } from "@/services/configService";
 
 export function UserTypeSelection() {
+  const [features, setFeatures] = useState<AppFeatures>({ caregiver_login: false });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await getAppConfig();
+        setFeatures(config.features);
+      } catch (error) {
+        console.error("Failed to load app configuration:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-8 flex items-center justify-center min-h-[300px]">
+        <div className="animate-pulse flex flex-col items-center gap-2">
+          <div className="h-16 w-16 bg-primary/20 rounded-full"></div>
+          <div className="h-8 w-48 bg-gray-200 rounded"></div>
+          <div className="h-4 w-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
@@ -43,31 +75,33 @@ export function UserTypeSelection() {
           </Card>
         </Link>
 
-        <Link to="/login/caregiver" className="transform transition-all duration-300 hover:scale-105">
-          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
-            <div className="absolute inset-0 bg-gradient-secondary opacity-0 group-hover:opacity-5 transition-opacity"></div>
-            <div className="flex items-center space-x-5">
-              <div className="p-4 bg-green-100 rounded-full pill-shadow">
-                <HeartHandshake className="w-10 h-10 text-secondary" />
-              </div>
-              <div className="text-left flex-1">
-                <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
-                <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    <Users className="w-3 h-3" /> Family Connect
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                    <HeartPulse className="w-3 h-3" /> Health Reports
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                    <Palette className="w-3 h-3" /> Medication Editor
-                  </span>
+        {features.caregiver_login && (
+          <Link to="/login/caregiver" className="transform transition-all duration-300 hover:scale-105">
+            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group">
+              <div className="absolute inset-0 bg-gradient-secondary opacity-0 group-hover:opacity-5 transition-opacity"></div>
+              <div className="flex items-center space-x-5">
+                <div className="p-4 bg-green-100 rounded-full pill-shadow">
+                  <HeartHandshake className="w-10 h-10 text-secondary" />
+                </div>
+                <div className="text-left flex-1">
+                  <h2 className="text-2xl font-semibold text-gray-900">I'm a Caregiver</h2>
+                  <p className="text-gray-600 text-lg">Support your loved ones with compassion</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      <Users className="w-3 h-3" /> Family Connect
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <HeartPulse className="w-3 h-3" /> Health Reports
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <Palette className="w-3 h-3" /> Medication Editor
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
+        )}
       </div>
 
       <div className="text-center fade-in" style={{animationDelay: "0.4s"}}>
