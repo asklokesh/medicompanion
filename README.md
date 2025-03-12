@@ -1,69 +1,159 @@
-# Welcome to your Lovable project
 
-## Project info
+# MediHelper: Smart Medication Management App
 
-**URL**: https://lovable.dev/projects/0d0827cd-5ea0-4fb7-bc8d-056d1dcfcf69
+![MediHelper Dashboard](public/og-image.png)
 
-## How can I edit this code?
+## Overview
 
-There are several ways of editing your application.
+MediHelper is a comprehensive web application designed to help senior citizens and individuals with complex medication regimens manage their health more effectively. The application offers intuitive tools for medication management, appointment tracking, pill identification, health monitoring, and caregiver communication.
 
-**Use Lovable**
+## Core Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0d0827cd-5ea0-4fb7-bc8d-056d1dcfcf69) and start prompting.
+### 🔹 Medication Management
+- **My Medications**: Track all your current medications in one place
+- **Add/Edit Medications**: Easily add new medications or update existing ones with dosage, frequency, and timing information
+- **Medication Reminders**: Never miss a dose with customizable reminder notifications
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🔹 Pill Identification
+- **Text Search**: Find medications by name, markings, or physical characteristics
+- **Image Recognition**: Upload photos of pills for automated identification
+- **Comprehensive Information**: Get detailed information about identified medications including purpose, ingredients, and potential interactions
 
-**Use your preferred IDE**
+### 🔹 Appointment & Schedule Management
+- **Calendar View**: See all upcoming appointments in an easy-to-read calendar
+- **Reminders**: Get notified about upcoming appointments
+- **Scheduling**: Add and manage healthcare appointments
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🔹 Health Tracking
+- **Adherence Tracking**: Monitor medication compliance over time
+- **Health Metrics**: Record and visualize vital health measurements
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 🔹 Caregiver Connectivity
+- **Video Chat**: Connect with caregivers and healthcare providers through integrated video calls
+- **Care Notes**: Share important health updates with your care team
+- **Caregiver Access**: Grant limited access to caregivers to help monitor medication adherence
 
-Follow these steps:
+### 🔹 Brain Health
+- **Brain Games**: Simple cognitive exercises to keep the mind active
+- **Memory Tools**: Memory aids and cognitive assistance features
+
+## Technology Stack
+
+- **Frontend**: React with TypeScript for type safety
+- **UI Framework**: Tailwind CSS with shadcn/ui components
+- **Authentication**: Supabase Auth
+- **Database**: Supabase PostgreSQL
+- **API Integration**: RxNav API for medication data
+- **State Management**: React Context & TanStack Query
+- **Deployment**: Lovable deployment system
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <repository-url>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to project directory
+cd medihelper
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:5173` to see the application running locally.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## User Workflows
 
-**Use GitHub Codespaces**
+### 1. Medication Management
+1. Navigate to "My Medications"
+2. Click "Add New" to create a new medication entry
+3. Enter medication details including name, dosage, and schedule
+4. Save the medication to your profile
+5. Receive reminders based on your configured schedule
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 2. Pill Identification
+1. Navigate to "Identify Pill"
+2. Either:
+   - Enter text description of the pill
+   - Upload an image of the pill
+3. Review the identification results
+4. Add the identified medication to your list if needed
 
-## What technologies are used for this project?
+### 3. Reminders & Scheduling
+1. View all upcoming medication times in the Reminders section
+2. Mark medications as taken when complete
+3. Manage appointment schedule in the Calendar view
+4. Set up voice reminders for more accessible notifications
 
-This project is built with .
+## Development Roadmap
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Completed
+- ✅ Core medication management functionality
+- ✅ Basic pill identification using RxNav API
+- ✅ Reminders interface
+- ✅ Video chat mockup
+- ✅ User authentication
+- ✅ Supabase database integration
+- ✅ Activity logging
 
-## How can I deploy this project?
+### In Progress
+- 🔄 Enhanced pill identification with image analysis
+- 🔄 Medication interaction checker
+- 🔄 Health metrics dashboard
 
-Simply open [Lovable](https://lovable.dev/projects/0d0827cd-5ea0-4fb7-bc8d-056d1dcfcf69) and click on Share -> Publish.
+### Planned (Future Iterations)
+- 📅 Mobile app versions (iOS/Android)
+- 📅 Voice assistant integration
+- 📅 Pharmacy integration for automatic refills
+- 📅 Wearable device synchronization
+- 📅 AI-powered health insights
+- 📅 Support for multiple languages
 
-## I want to use a custom domain - is that possible?
+## Contributing
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+We welcome contributions to MediHelper! To contribute:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+Please make sure to update tests as appropriate and adhere to the existing coding style.
+
+## Privacy & Security
+
+MediHelper takes user privacy and data security seriously:
+
+- All personal health information is encrypted
+- Authentication is handled through secure providers
+- No health data is shared with third parties without explicit consent
+- Regular security audits are conducted
+- HIPAA compliance guidelines are followed (in applicable regions)
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- RxNav API for medication data
+- NIH for health information resources
+- Supabase for backend infrastructure
+- shadcn/ui for component library
+- All contributors and beta testers
+
+## Support
+
+For help or questions, please:
+- Open an issue in the GitHub repository
+- Contact our support team at support@medihelper.com
