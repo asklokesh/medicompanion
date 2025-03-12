@@ -61,13 +61,15 @@ export const getAppConfig = async (): Promise<AppConfig> => {
     let currentTheme = defaultAppConfig.currentTheme;
     
     if (!themeError && themeData) {
-      currentTheme = themeData.value?.theme || defaultAppConfig.currentTheme;
+      // Fix: Safely access the theme property from the JSON value
+      const themeValue = themeData.value as { theme?: string };
+      currentTheme = themeValue?.theme as AppTheme || defaultAppConfig.currentTheme;
     }
     
     return { 
       ...defaultAppConfig,
       features: mergedFeatures,
-      currentTheme: currentTheme as AppTheme
+      currentTheme
     };
   } catch (error) {
     console.error('Unexpected error fetching app configuration:', error);
