@@ -389,7 +389,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_user_activity: {
+        Args: {
+          activity_type: string
+          user_id?: string
+          query?: string
+          found_results?: boolean
+          timestamp_param?: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

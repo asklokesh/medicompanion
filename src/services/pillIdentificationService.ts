@@ -155,7 +155,7 @@ async function logActivity(activityType: string, query?: string, foundResults?: 
     // Create the activity object with only valid properties
     const activityData: Record<string, any> = {
       activity_type: activityType,
-      timestamp: new Date().toISOString()
+      timestamp_param: new Date().toISOString()
     };
     
     // Only add user_id if we have a user
@@ -173,7 +173,7 @@ async function logActivity(activityType: string, query?: string, foundResults?: 
       activityData.found_results = foundResults;
     }
     
-    // Insert the activity record directly with raw SQL to avoid type issues
+    // Call the stored procedure with our parameters
     const { error } = await supabase.rpc('insert_user_activity', activityData);
     
     if (error) {
