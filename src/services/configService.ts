@@ -48,12 +48,26 @@ export const getAppConfig = async (): Promise<AppConfig> => {
     // Merge the stored value with our default to ensure we have all expected properties
     const mergedFeatures = {
       ...defaultAppConfig.features,
-      ...data.value as AppFeatures
+      ...(data?.value as AppFeatures || {})
     };
+    
+    // Get theme data
+    const { data: themeData, error: themeError } = await supabase
+      .from('app_config')
+      .select('*')
+      .eq('id', 'theme')
+      .single();
+      
+    let currentTheme = defaultAppConfig.currentTheme;
+    
+    if (!themeError && themeData) {
+      currentTheme = themeData.value?.theme || defaultAppConfig.currentTheme;
+    }
     
     return { 
       ...defaultAppConfig,
-      features: mergedFeatures
+      features: mergedFeatures,
+      currentTheme: currentTheme as AppTheme
     };
   } catch (error) {
     console.error('Unexpected error fetching app configuration:', error);
@@ -95,6 +109,15 @@ export const updateAppFeatures = async (features: Partial<AppFeatures>): Promise
     return await updateAppConfig('features', updatedFeatures);
   } catch (error) {
     console.error('Failed to update app features:', error);
+    return false;
+  }
+};
+
+export const updateAppTheme = async (theme: AppTheme): Promise<boolean> => {
+  try {
+    return await updateAppConfig('theme', { theme });
+  } catch (error) {
+    console.error('Failed to update app theme:', error);
     return false;
   }
 };

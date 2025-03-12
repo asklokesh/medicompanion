@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query"; 
-import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomNavigation } from "./BottomNavigation";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -252,10 +252,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-4 md:p-6 animate-fadeIn">
+        <main className={cn(
+          "flex-1 p-4 md:p-6 animate-fadeIn",
+          isMobile ? "pb-24" : "" // Add padding at the bottom for mobile to accommodate the navigation bar
+        )}>
           {children}
         </main>
       </div>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNavigation />
     </div>
   );
 }
