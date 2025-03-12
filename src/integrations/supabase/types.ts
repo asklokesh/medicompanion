@@ -321,6 +321,33 @@ export type Database = {
           },
         ]
       }
+      user_activity: {
+        Row: {
+          activity_type: string
+          found_results: boolean | null
+          id: string
+          query: string | null
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          found_results?: boolean | null
+          id?: string
+          query?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          found_results?: boolean | null
+          id?: string
+          query?: string | null
+          timestamp?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null

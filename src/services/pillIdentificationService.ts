@@ -67,7 +67,7 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
     
     // Log activity to Supabase if connected
     try {
-      await logPillSearch(searchQuery, results.length > 0);
+      await logActivity('pill_search', searchQuery, results.length > 0);
     } catch (e) {
       console.error("Failed to log search activity:", e);
       // Non-critical error, don't block the search results
@@ -130,7 +130,7 @@ export async function identifyPillFromImage(imageFile: File): Promise<PillMatch[
     
     // Log activity to Supabase if connected
     try {
-      await logPillImageSearch();
+      await logActivity('pill_image_search');
     } catch (e) {
       console.error("Failed to log image search activity:", e);
     }
@@ -147,29 +147,40 @@ export async function identifyPillFromImage(imageFile: File): Promise<PillMatch[
   }
 }
 
-// Helper function to log search activity
-async function logPillSearch(query: string, foundResults: boolean) {
+// Helper function to log any pill-related activity
+async function logActivity(activityType: string, query?: string, foundResults?: boolean) {
   try {
-    await supabase.from('user_activity').insert({
-      activity_type: 'pill_search',
-      query: query,
-      found_results: foundResults,
+    const user = supabase.auth.getUser();
+    
+    // Create the activity object with only valid properties
+    const activityData: Record<string, any> = {
+      activity_type: activityType,
       timestamp: new Date().toISOString()
-    });
+    };
+    
+    // Only add user_id if we have a user
+    const { data: userData } = await user;
+    if (userData?.user?.id) {
+      activityData.user_id = userData.user.id;
+    }
+    
+    // Only add these if they're provided
+    if (query !== undefined) {
+      activityData.query = query;
+    }
+    
+    if (foundResults !== undefined) {
+      activityData.found_results = foundResults;
+    }
+    
+    // Insert the activity record directly with raw SQL to avoid type issues
+    const { error } = await supabase.rpc('insert_user_activity', activityData);
+    
+    if (error) {
+      console.error("Error logging activity:", error);
+    }
   } catch (e) {
-    console.error("Error logging search:", e);
-  }
-}
-
-// Helper function to log image search activity
-async function logPillImageSearch() {
-  try {
-    await supabase.from('user_activity').insert({
-      activity_type: 'pill_image_search',
-      timestamp: new Date().toISOString()
-    });
-  } catch (e) {
-    console.error("Error logging image search:", e);
+    console.error("Error in logActivity:", e);
   }
 }
 
