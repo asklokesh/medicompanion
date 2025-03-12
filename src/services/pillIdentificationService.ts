@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -32,10 +33,12 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
     );
     
     if (!response.ok) {
+      console.error('RxNav API error:', response.statusText);
       throw new Error('Failed to fetch from RxNav API');
     }
     
     const data = await response.json();
+    console.log('RxNav API response:', data);
     
     // Parse the response into our PillMatch format
     const conceptGroups = data.drugGroup?.conceptGroup || [];
@@ -58,8 +61,11 @@ export async function searchPillsByText(searchQuery: string): Promise<PillMatch[
       }
     }
     
+    console.log('Parsed pill results:', results);
+    
     // If we don't get results from RxNav or get fewer than 3, add fallback data
     if (results.length < 3) {
+      console.log('Using fallback results due to insufficient API results');
       const fallbackResults = getFallbackResults(searchQuery);
       results = [...results, ...fallbackResults].slice(0, 5);
     }
@@ -158,7 +164,7 @@ type ActivityData = {
 // Helper function to log any pill-related activity
 async function logActivity(activityType: string, query?: string, foundResults?: boolean) {
   try {
-    const user = supabase.auth.getUser();
+    const { data: userData } = await supabase.auth.getUser();
     
     // Create the activity data object with the correct type
     const activityData: ActivityData = {
@@ -167,7 +173,6 @@ async function logActivity(activityType: string, query?: string, foundResults?: 
     };
     
     // Only add optional properties if they're provided
-    const { data: userData } = await user;
     if (userData?.user?.id) {
       activityData.user_id = userData.user.id;
     }
@@ -203,7 +208,7 @@ function getRandomPillColor(): string {
 
 // Fallback data when API fails or returns no results
 function getFallbackResults(query: string): PillMatch[] {
-  return [
+  const commonMeds = [
     {
       id: "fallback-1",
       name: "Lisinopril 10mg",
@@ -224,10 +229,40 @@ function getFallbackResults(query: string): PillMatch[] {
       appearance: "Oval peach-colored tablet, scored on one side, imprinted with 'MERCK 740'",
       purpose: "Cholesterol medication",
       imageColor: "bg-orange-100"
+    },
+    {
+      id: "fallback-4",
+      name: "Amlodipine 5mg",
+      appearance: "White round tablet, imprinted with 'A5' on one side",
+      purpose: "Blood pressure medication",
+      imageColor: "bg-purple-100"
+    },
+    {
+      id: "fallback-5",
+      name: "Atorvastatin 20mg",
+      appearance: "Oval white tablet, imprinted with 'ATV 20'",
+      purpose: "Cholesterol medication",
+      imageColor: "bg-yellow-100"
+    },
+    {
+      id: "fallback-6",
+      name: "Levothyroxine 50mcg",
+      appearance: "Round blue tablet, imprinted with 'L50'",
+      purpose: "Thyroid medication",
+      imageColor: "bg-blue-100"
     }
-  ].filter(p => 
-    p.name.toLowerCase().includes(query.toLowerCase()) || 
-    p.appearance.toLowerCase().includes(query.toLowerCase()) ||
-    p.purpose.toLowerCase().includes(query.toLowerCase())
-  );
+  ];
+  
+  // Filter based on search query if provided
+  if (query) {
+    const lowercaseQuery = query.toLowerCase();
+    return commonMeds.filter(med => 
+      med.name.toLowerCase().includes(lowercaseQuery) || 
+      med.appearance.toLowerCase().includes(lowercaseQuery) ||
+      med.purpose.toLowerCase().includes(lowercaseQuery)
+    );
+  }
+  
+  // Return all if no query or no matches
+  return commonMeds;
 }

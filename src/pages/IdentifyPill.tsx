@@ -127,8 +127,10 @@ const IdentifyPill = () => {
     setMatchingPills([]);
     
     try {
+      console.log("Searching for:", searchQuery);
       // Search for pills based on text query
       const results = await searchPillsByText(searchQuery);
+      console.log("Search results:", results);
       setMatchingPills(results);
       
       // Add to recent searches
