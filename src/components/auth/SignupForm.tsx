@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 export function SignupForm() {
-  const { userType } = useParams<{ userType: 'senior' | 'caregiver' }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -19,7 +18,7 @@ export function SignupForm() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signUp(email, password, userType || 'senior', fullName);
+      await signUp(email, password, fullName);
     } catch (error) {
       console.error('Signup error:', error);
     } finally {
@@ -43,9 +42,7 @@ export function SignupForm() {
             Create Your Account
           </h1>
           <p className="text-xl text-gray-600">
-            {userType === 'senior' 
-              ? 'Start managing your medications with ease' 
-              : 'Help your loved ones manage their medications'}
+            Start managing your medications with ease
           </p>
         </div>
       </div>
@@ -106,7 +103,7 @@ export function SignupForm() {
           <p className="text-lg text-gray-600">
             Already have an account?{" "}
             <Button variant="link" asChild className="text-lg">
-              <Link to={`/login/${userType}`}>Sign in</Link>
+              <Link to="/login">Sign in</Link>
             </Button>
           </p>
         </div>
