@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { BottomNavigation } from "./BottomNavigation";
 import { UserRound, BellRing, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -31,7 +31,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <UserRound className="w-5 h-5" />
             <span className="hidden md:inline-block">
-              {user?.name || "Profile"}
+              {user?.email?.split('@')[0] || "Profile"}
             </span>
           </Link>
           <Link

@@ -1,13 +1,13 @@
 
 import { DashboardLayout } from "./DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "./card";
-import { Button } from "./button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Activity, Heart, TrendingUp, Thermometer, Plus, Droplets, LineChart, Clock, Weight, Watch, Smartphone } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from "react";
 import { getHealthTrendsData, getLatestHealthMetrics, HealthData, HealthMetric } from "./healthTrackingService";
 import { toast } from "sonner";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { RecordHealthMetricModal } from "./RecordHealthMetricModal";
 import { DeviceIntegrationModal } from "./DeviceIntegrationModal";
 
