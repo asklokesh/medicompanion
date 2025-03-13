@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: {
+            // Only allow senior user type for now
             user_type: 'senior',
             full_name: fullName,
           },

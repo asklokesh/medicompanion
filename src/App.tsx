@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,12 +22,6 @@ import Profile from "./pages/Profile";
 import BrainGames from "./pages/BrainGames";
 import Reminders from "./pages/Reminders";
 import HealthTracking from "./pages/HealthTracking";
-import AdherenceTracking from "./pages/AdherenceTracking";
-import AppointmentManager from "./pages/AppointmentManager";
-import CareNotes from "./pages/CareNotes";
-import Alerts from "./pages/Alerts";
-import VideoChat from "./pages/VideoChat";
-import HealthReports from "./pages/HealthReports";
 import AdminConfig from "./pages/AdminConfig";
 
 const queryClient = new QueryClient();
@@ -66,13 +59,15 @@ const App = () => (
               {/* Admin route */}
               <Route path="/admin/config" element={<AdminConfig />} />
               
-              {/* Caregiver-specific routes */}
+              {/* Caregiver-specific routes - disabled but code preserved */}
+              {/* 
               <Route path="/adherence-tracking" element={<AdherenceTracking />} />
               <Route path="/appointment-manager" element={<AppointmentManager />} />
               <Route path="/care-notes" element={<CareNotes />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/video-chat" element={<VideoChat />} />
-              <Route path="/health-reports" element={<HealthReports />} />
+              <Route path="/health-reports" element={<HealthReports />} /> 
+              */}
               
               {/* Legacy routes to keep compatibility */}
               <Route path="/schedule" element={<Schedule />} />

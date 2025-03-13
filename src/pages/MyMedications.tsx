@@ -33,23 +33,33 @@ const MyMedications = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(true);
   const [medicationToDelete, setMedicationToDelete] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMedications = async () => {
       if (user) {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('medications')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('name');
-        
-        if (data && !error) {
-          setMedications(data);
-        } else {
+        try {
+          setLoading(true);
+          setError(null);
+          
+          const { data, error } = await supabase
+            .from('medications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('name');
+          
+          if (error) throw error;
+          
+          if (data) {
+            setMedications(data);
+          }
+        } catch (err) {
+          console.error("Error fetching medications:", err);
+          setError("Failed to load medications. Please try again.");
           toast.error("Failed to load medications");
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     };
 
@@ -70,6 +80,7 @@ const MyMedications = () => {
       setMedications(medications.filter(med => med.id !== medicationToDelete));
       toast.success("Medication deleted successfully");
     } catch (error) {
+      console.error("Error deleting medication:", error);
       toast.error("Failed to delete medication");
     } finally {
       setMedicationToDelete(null);
@@ -77,9 +88,34 @@ const MyMedications = () => {
   };
 
   const displayTimeOfDay = (times: string[]) => {
+    if (!Array.isArray(times)) return '';
+    
     return times
       .map(time => time.charAt(0).toUpperCase() + time.slice(1))
       .join(', ');
+  };
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    // Fetch medications again
+    if (user) {
+      supabase
+        .from('medications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name')
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error retrying medication fetch:", error);
+            setError("Failed to load medications. Please try again.");
+            toast.error("Failed to load medications");
+          } else if (data) {
+            setMedications(data);
+          }
+          setLoading(false);
+        });
+    }
   };
 
   return (
@@ -99,6 +135,15 @@ const MyMedications = () => {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
           </div>
+        ) : error ? (
+          <Card>
+            <CardContent className="p-6 text-center space-y-4">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+              <h3 className="text-xl font-medium">Error Loading Medications</h3>
+              <p className="text-gray-500">{error}</p>
+              <Button onClick={handleRetry}>Try Again</Button>
+            </CardContent>
+          </Card>
         ) : medications.length > 0 ? (
           <div className="space-y-4">
             {medications.map((medication) => (
@@ -127,7 +172,7 @@ const MyMedications = () => {
                     </div>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="icon" asChild>
-                        <Link to={`/medications/edit/${medication.id}`}>
+                        <Link to={`/medications/edit/${medication.id}`} aria-label={`Edit ${medication.name}`}>
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -136,6 +181,7 @@ const MyMedications = () => {
                         size="icon" 
                         onClick={() => setMedicationToDelete(medication.id)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        aria-label={`Delete ${medication.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

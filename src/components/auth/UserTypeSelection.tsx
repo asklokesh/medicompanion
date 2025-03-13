@@ -86,6 +86,30 @@ export function UserTypeSelection() {
             </div>
           </Card>
         </Link>
+
+        {/* Caregiver option removed but code kept for future reference */}
+        {/* <Link to="/login/caregiver" className="transform transition-all duration-300 hover:scale-105">
+          <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden relative group rounded-3xl">
+            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity"></div>
+            <div className="flex items-center space-x-5">
+              <div className="p-4 bg-purple-100 rounded-full pill-shadow">
+                <HeartPulse className="w-10 h-10 text-purple-500" />
+              </div>
+              <div className="text-left flex-1">
+                <h2 className="text-2xl font-semibold text-gray-900">Caregiver Access</h2>
+                <p className="text-gray-600 text-lg">Help manage care for your loved ones</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <Bell className="w-3 h-3" /> Medication Management
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    <Activity className="w-3 h-3" /> Health Monitoring
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Link> */}
       </div>
 
       <div className="text-center fade-in" style={{animationDelay: "0.4s"}}>
