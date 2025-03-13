@@ -1,6 +1,6 @@
 
-import { AuthLayout } from "./AuthLayout";
-import { UserTypeSelection } from "./UserTypeSelection";
+import { AuthLayout } from "./components/auth/AuthLayout";
+import { UserTypeSelection } from "./components/auth/UserTypeSelection";
 import { Heart, Activity, Calendar, AlertCircle, Brain, Bell, Users } from "lucide-react";
 import { useEffect } from "react";
 

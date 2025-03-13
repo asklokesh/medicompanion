@@ -1,5 +1,5 @@
 
-import { supabase } from "./supabase/client";
+import { supabase } from "./integrations/supabase/client";
 
 export interface HealthData {
   day: string;
@@ -151,7 +151,7 @@ export const disconnectHealthDevice = async (
   try {
     console.log(`Disconnecting ${deviceType} for user ${userId}`);
     // This would disconnect from the device's API in a real implementation
-    return true;
+    return false;
   } catch (error) {
     console.error(`Error disconnecting ${deviceType}:`, error);
     return false;

@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { useAuth } from "../../lib/auth/AuthContext";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -9,9 +8,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "../../components/ui/dialog";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import {
   Form,
   FormControl,
@@ -19,18 +18,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "../../components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { recordHealthMetric } from "@/services/healthTrackingService";
+import { recordHealthMetric } from "../../healthTrackingService";
 
 const healthMetricSchema = z.object({
   type: z.string().min(1, "Metric type is required"),
@@ -95,7 +94,6 @@ export function RecordHealthMetricModal({
     }
   };
 
-  // Set the unit field and placeholder based on the selected type
   const handleTypeChange = (type: string) => {
     form.setValue("type", type);
     
@@ -146,7 +144,6 @@ export function RecordHealthMetricModal({
     
     form.setValue("unit", unit);
     
-    // Update the placeholder of the value field
     const valueField = document.getElementById("value");
     if (valueField) {
       (valueField as HTMLInputElement).placeholder = placeholder;
