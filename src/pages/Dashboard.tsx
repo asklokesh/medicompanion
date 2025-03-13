@@ -12,7 +12,6 @@ import { DashboardLoading } from "@/components/dashboard/DashboardLoading";
 const Dashboard = () => {
   const { user } = useAuth();
   const [streak, setStreak] = useState(28);
-  const [caregiverMessage, setCaregiverMessage] = useState("\"Mom, don't forget your pills! ❤️\" - Emily");
 
   const {
     userProfile,
@@ -44,7 +43,6 @@ const Dashboard = () => {
           allCurrentMedicationsTaken={allCurrentMedicationsTaken}
           timeOfDay={timeOfDay}
           markMedicationsTaken={markMedicationsTaken}
-          caregiverMessage={caregiverMessage}
         />
 
         {medications.length === 0 && <EmptyMedicationsCard />}

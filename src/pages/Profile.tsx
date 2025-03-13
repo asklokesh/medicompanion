@@ -1,7 +1,7 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { PlusCircle, Trash2, X } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 
 interface Profile {
   id: string;
@@ -22,23 +24,45 @@ interface Profile {
   bio?: string;
   created_at?: string;
   updated_at?: string;
+  dear_ones?: DearOne[];
+}
+
+interface DearOne {
+  id: string;
+  name: string;
+  relation: string;
+  image_url?: string;
 }
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  const dearOnesRef = useRef<HTMLDivElement>(null);
+  
   const [profile, setProfile] = useState<Profile>({
     id: "",
     full_name: "",
     phone: "",
+    dear_ones: []
   });
   
   const [notificationSettings, setNotificationSettings] = useState({
     email: true,
     push: true,
     sms: false,
+  });
+
+  // New dear one form state
+  const [newDearOne, setNewDearOne] = useState<{
+    name: string;
+    relation: string;
+  }>({
+    name: "",
+    relation: ""
   });
 
   useEffect(() => {
@@ -58,11 +82,12 @@ const Profile = () => {
         if (data) {
           setProfile({
             id: data.id,
-            full_name: data.full_name,
-            phone: data.phone,
+            full_name: data.full_name || "",
+            phone: data.phone || "",
             avatar_url: data.avatar_url,
             date_of_birth: data.date_of_birth,
             bio: data.bio,
+            dear_ones: data.dear_ones || [],
             created_at: data.created_at,
             updated_at: data.updated_at
           });
@@ -76,7 +101,15 @@ const Profile = () => {
     };
 
     fetchProfile();
-  }, [user]);
+    
+    // Check if the URL has a hash to navigate to a specific section
+    if (location.hash === '#dear-ones') {
+      setActiveTab('dear-ones');
+      setTimeout(() => {
+        dearOnesRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [user, location.hash]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -92,7 +125,8 @@ const Profile = () => {
           // Only include these fields if they exist
           ...(profile.date_of_birth && { date_of_birth: profile.date_of_birth }),
           ...(profile.bio && { bio: profile.bio }),
-          ...(profile.avatar_url && { avatar_url: profile.avatar_url })
+          ...(profile.avatar_url && { avatar_url: profile.avatar_url }),
+          dear_ones: profile.dear_ones
         })
         .eq('id', user.id);
       
@@ -105,6 +139,48 @@ const Profile = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleAddDearOne = () => {
+    if (!newDearOne.name.trim()) {
+      toast.error("Please enter a name");
+      return;
+    }
+
+    const updatedDearOnes = [
+      ...(profile.dear_ones || []),
+      {
+        id: uuidv4(),
+        name: newDearOne.name.trim(),
+        relation: newDearOne.relation.trim() || "Family",
+        image_url: ""
+      }
+    ];
+
+    setProfile({
+      ...profile,
+      dear_ones: updatedDearOnes
+    });
+
+    setNewDearOne({
+      name: "",
+      relation: ""
+    });
+
+    toast.success(`${newDearOne.name} added to your dear ones`);
+  };
+
+  const handleRemoveDearOne = (id: string) => {
+    const updatedDearOnes = (profile.dear_ones || []).filter(
+      person => person.id !== id
+    );
+
+    setProfile({
+      ...profile,
+      dear_ones: updatedDearOnes
+    });
+
+    toast.success("Person removed from your dear ones");
   };
 
   const handleSignOut = async () => {
@@ -164,7 +240,7 @@ const Profile = () => {
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input 
                     id="phone" 
-                    value={profile.phone}
+                    value={profile.phone || ""}
                     onChange={(e) => setProfile({...profile, phone: e.target.value})}
                     className="h-12 text-base"
                   />
@@ -175,7 +251,7 @@ const Profile = () => {
                   <Input 
                     id="dob" 
                     type="date"
-                    value={profile.date_of_birth}
+                    value={profile.date_of_birth || ""}
                     onChange={(e) => setProfile({...profile, date_of_birth: e.target.value})}
                     className="h-12 text-base"
                   />
@@ -198,12 +274,58 @@ const Profile = () => {
               <CardTitle>Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="notifications">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="profile">Profile</TabsTrigger>
                   <TabsTrigger value="notifications">Notifications</TabsTrigger>
                   <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
-                  <TabsTrigger value="account">Account</TabsTrigger>
+                  <TabsTrigger value="dear-ones">Dear Ones</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="profile" className="space-y-4 pt-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input 
+                        id="email" 
+                        value={user?.email || ""} 
+                        disabled 
+                        className="h-12 text-base"
+                      />
+                      <p className="text-xs text-gray-500">Your email cannot be changed</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Bio</Label>
+                      <Input 
+                        id="bio" 
+                        value={profile.bio || ""}
+                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                        placeholder="Tell us a bit about yourself"
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full rounded-xl h-12 text-base"
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save Profile Changes"}
+                    </Button>
+                    
+                    <div className="pt-4 border-t">
+                      <Button 
+                        variant="destructive" 
+                        className="w-full rounded-xl h-12 text-base"
+                        onClick={handleSignOut}
+                      >
+                        Sign Out
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
                 
                 <TabsContent value="notifications" className="space-y-4 pt-4">
                   <div className="space-y-4">
@@ -276,48 +398,98 @@ const Profile = () => {
                   </div>
                 </TabsContent>
                 
-                <TabsContent value="account" className="space-y-4 pt-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input 
-                        id="email" 
-                        value={user?.email || ""} 
-                        disabled 
-                        className="h-12 text-base"
-                      />
-                      <p className="text-xs text-gray-500">Your email cannot be changed</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="bio">Bio</Label>
-                      <Input 
-                        id="bio" 
-                        value={profile.bio || ""}
-                        onChange={(e) => setProfile({...profile, bio: e.target.value})}
-                        placeholder="Tell us a bit about yourself"
-                        className="h-12 text-base"
-                      />
+                <TabsContent value="dear-ones" className="space-y-4 pt-4" ref={dearOnesRef}>
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">My Dear Ones</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                        Add the names of loved ones who motivate you to stay healthy
+                      </p>
+                      
+                      {/* List of current dear ones */}
+                      <div className="space-y-2 mb-6">
+                        {(profile.dear_ones || []).length === 0 ? (
+                          <p className="text-sm text-gray-500 italic">No dear ones added yet</p>
+                        ) : (
+                          (profile.dear_ones || []).map(person => (
+                            <div 
+                              key={person.id} 
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  {person.image_url ? (
+                                    <AvatarImage src={person.image_url} alt={person.name} />
+                                  ) : null}
+                                  <AvatarFallback className="bg-primary/20 text-primary">
+                                    {person.name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <h4 className="font-medium">{person.name}</h4>
+                                  <p className="text-xs text-gray-500">{person.relation}</p>
+                                </div>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-8 w-8 text-gray-500 hover:text-red-500"
+                                onClick={() => handleRemoveDearOne(person.id)}
+                              >
+                                <Trash2 size={18} />
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      
+                      {/* Add new dear one form */}
+                      <div className="border rounded-lg p-4 space-y-4">
+                        <h4 className="font-medium flex items-center">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          Add a Dear One
+                        </h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="dearOneName">Name</Label>
+                            <Input
+                              id="dearOneName"
+                              placeholder="e.g. Emily"
+                              value={newDearOne.name}
+                              onChange={(e) => setNewDearOne({...newDearOne, name: e.target.value})}
+                              className="h-12 text-base"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="dearOneRelation">Relationship</Label>
+                            <Input
+                              id="dearOneRelation"
+                              placeholder="e.g. Daughter"
+                              value={newDearOne.relation}
+                              onChange={(e) => setNewDearOne({...newDearOne, relation: e.target.value})}
+                              className="h-12 text-base"
+                            />
+                          </div>
+                        </div>
+                        
+                        <Button 
+                          onClick={handleAddDearOne}
+                          className="mt-2"
+                        >
+                          Add Person
+                        </Button>
+                      </div>
                     </div>
                     
                     <Button 
-                      variant="outline" 
                       className="w-full rounded-xl h-12 text-base"
                       onClick={handleSaveProfile}
                       disabled={isSaving}
                     >
-                      {isSaving ? "Saving..." : "Save Account Changes"}
+                      {isSaving ? "Saving..." : "Save All Changes"}
                     </Button>
-                    
-                    <div className="pt-4 border-t">
-                      <Button 
-                        variant="destructive" 
-                        className="w-full rounded-xl h-12 text-base"
-                        onClick={handleSignOut}
-                      >
-                        Sign Out
-                      </Button>
-                    </div>
                   </div>
                 </TabsContent>
               </Tabs>

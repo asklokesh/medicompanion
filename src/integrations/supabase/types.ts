@@ -543,6 +543,7 @@ export type Database = {
           bio: string | null
           created_at: string
           date_of_birth: string | null
+          dear_ones: Json | null
           full_name: string | null
           id: string
           phone: string | null
@@ -554,6 +555,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           date_of_birth?: string | null
+          dear_ones?: Json | null
           full_name?: string | null
           id: string
           phone?: string | null
@@ -565,6 +567,7 @@ export type Database = {
           bio?: string | null
           created_at?: string
           date_of_birth?: string | null
+          dear_ones?: Json | null
           full_name?: string | null
           id?: string
           phone?: string | null

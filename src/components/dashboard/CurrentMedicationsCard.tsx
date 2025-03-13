@@ -1,10 +1,8 @@
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Pill } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
-import { Medication, MedicationLog } from "@/hooks/useDashboardData";
+import { CheckCircle2, Clock } from "lucide-react";
+import type { Medication } from "@/hooks/useDashboardData";
 
 interface CurrentMedicationsCardProps {
   currentMedications: Medication[];
@@ -12,7 +10,6 @@ interface CurrentMedicationsCardProps {
   allCurrentMedicationsTaken: () => boolean;
   timeOfDay: string;
   markMedicationsTaken: () => Promise<boolean>;
-  caregiverMessage: string;
 }
 
 export function CurrentMedicationsCard({
@@ -21,65 +18,100 @@ export function CurrentMedicationsCard({
   allCurrentMedicationsTaken,
   timeOfDay,
   markMedicationsTaken,
-  caregiverMessage
 }: CurrentMedicationsCardProps) {
-  if (currentMedications.length === 0) {
-    return null;
-  }
+  
+  const capitalizedTimeOfDay = timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
 
-  const handleMarkTaken = async () => {
-    const success = await markMedicationsTaken();
-    if (success) {
-      toast.success("Medications marked as taken!");
-    } else {
-      toast.error("Failed to update medication status");
-    }
+  const handleTakeMedications = async () => {
+    await markMedicationsTaken();
   };
 
-  return (
-    <Card className="border-l-4 border-l-red-500 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-6 w-6 text-red-500" />
-            <h2 className="text-2xl font-bold text-gray-900">
-              {timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1)} Medications
-            </h2>
-          </div>
-          
-          <div className="mb-4">
-            <h3 className="text-2xl font-bold">
-              {format(new Date(), 'h:mm a')}
-            </h3>
-            
-            <div className="mt-4 space-y-2 border-l-2 border-gray-200 pl-4">
-              {currentMedications.map((med) => (
-                <div 
-                  key={med.id} 
-                  className={`flex items-center gap-2 ${
-                    isCurrentMedicationTaken(med.id) ? 'text-gray-500 line-through' : ''
-                  }`}
-                >
-                  <Pill className="h-5 w-5 text-primary" />
-                  <span className="text-lg">{med.name} ({med.dosage})</span>
+  if (currentMedications.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>No {capitalizedTimeOfDay} Medications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500">
+            You don't have any medications scheduled for {timeOfDay}.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (allCurrentMedicationsTaken()) {
+    return (
+      <Card className="bg-green-50 border-green-200">
+        <CardHeader>
+          <CardTitle className="flex items-center text-green-800">
+            <CheckCircle2 className="mr-2 h-5 w-5 text-green-600" />
+            {capitalizedTimeOfDay} Medications Taken
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-green-700 mb-2">
+            Great job! You've taken all your {timeOfDay} medications.
+          </p>
+          <div className="space-y-2">
+            {currentMedications.map((med) => (
+              <div
+                key={med.id}
+                className="p-3 bg-white border border-green-200 rounded-lg flex justify-between items-center"
+              >
+                <div>
+                  <h4 className="font-medium">{med.name}</h4>
+                  <p className="text-sm text-gray-500">{med.dosage}</p>
                 </div>
-              ))}
-            </div>
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+            ))}
           </div>
-          
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Clock className="mr-2 h-5 w-5 text-primary" />
+          {capitalizedTimeOfDay} Medications
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {currentMedications.map((med) => (
+              <div
+                key={med.id}
+                className={`p-3 border rounded-lg flex justify-between items-center ${
+                  isCurrentMedicationTaken(med.id)
+                    ? "bg-green-50 border-green-200"
+                    : "bg-white"
+                }`}
+              >
+                <div>
+                  <h4 className="font-medium">{med.name}</h4>
+                  <p className="text-sm text-gray-500">{med.dosage}</p>
+                </div>
+                {isCurrentMedicationTaken(med.id) ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                ) : null}
+              </div>
+            ))}
+          </div>
+
           {!allCurrentMedicationsTaken() && (
-            <Button 
-              className="w-full text-lg py-6"
-              onClick={handleMarkTaken}
+            <Button
+              size="lg"
+              className="w-full text-lg rounded-xl h-14"
+              onClick={handleTakeMedications}
             >
-              TAKE MEDICATIONS
+              Take All Medications
             </Button>
-          )}
-          
-          {caregiverMessage && (
-            <p className="text-gray-600 italic mt-4 text-center">
-              {caregiverMessage}
-            </p>
           )}
         </div>
       </CardContent>
