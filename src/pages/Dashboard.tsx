@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pill, Calendar, Camera, Palette, Clock, AlertCircle } from "lucide-react";
+import { Pill, Calendar, Camera, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -318,11 +318,19 @@ const Dashboard = () => {
             </Card>
           </Link>
           
-          <Link to="/theme" className="block">
+          <Link to="/brain-games" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                <Palette className="h-10 w-10 text-primary mb-2" />
-                <h3 className="text-lg font-medium">Change Theme</h3>
+                <img 
+                  src="/brain-games-icon.png" 
+                  alt="Brain Games"
+                  className="h-10 w-10 object-contain mb-2"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWJyYWluIj48cGF0aCBkPSJNMTkuMjIgMTIuOTRhNiA2IDAgMCAwLTkuNC02LjcyIi8+PHBhdGggZD0iTTcuNzYgMTUuMjdhMy42IDMuNiAwIDAxLTIuNjgtLjQuODguODggMCAwMS0uMzctLjg3bC41LTMuMzlhMS41NiAxLjU2IDAgMDAtLjA5LS43MSAxLjU5IDEuNTkgMCAwMC0uNTctLjcxIDEuNTUgMS41NSAwIDAxLS41Mi0xLjY3QTMuNjQgMy42NCAwIDAxNi43OCA1LjQzYTEuNTUgMS41NSAwIDAxMS42OC0uMjlBMy43NCAzLjc0IDAgMDExMi4yIDQuNWExLjU2IDEuNTYgMCAwMTEuMDYgMS4zOGwuMjcgMi44OGExLjQxIDEuNDEgMCAwMDIuODItLjMxbC0uMjctMy4zM0ExLjU1IDEuNTUgMCAwMTE3IDMuMDFhMy43MyAzLjczIDAgMDEzIDIuMiAxLjU2IDEuNTYgMCAwMS0uMzUgMS43M2wtLjQ5LjVjLS4yOS4zLS4zOC43NC0uMiAxLjEyLjEzLjM5LjQ2LjY1Ljg2LjcybDIuMTUuMzZjLjI0LjA0LjUuMTIuNzIuMjRhMS41OSAxLjU5IDAgMDEuNi43MyAxLjU1IDEuNTUgMCAwMS0uMzMgMS43QTMuNzYgMy43NiAwIDAxMjAgMTVhMS41NiAxLjU2IDAgMDEtMS45NS44bC0yLjUtMS4yNWMtLjM1LS4xNy0uNzMtLjEzLTEuMDcuMWEuOTQuOTQgMCAwMC0uNC43N2wzLjUxIDMuNSIvPjxwYXRoIGQ9Ik02LjMgMTAuOSAzLjA0IDguODZhMy42IDMuNiAwIDAxLTEuMzgtNC4wMkEzLjcgMy43IDAgMDE2LjI0IDNhMy42IDMuNiAwIDAxMi43IDEuMjFsMi40MSAyLjQiLz48cGF0aCBkPSJNMTEuMzUgMTguMiAxMyAxNS45YTEuMjUgMS4yNSAwIDAgMC0uMjctMS43OCAzLjQ0IDMuNDQgMCAwIDAtMy0uNCAzLjQgMy40IDAgMDAtLjY0LjM0Yy0uNzMuNTMtLjUyIDEuNzMtLjUyIDIuNDMgMCAxLjQzLS4yOCAyLjY1LTEuMjggMy43MS0uNTYuNi0xLjEuNjYtMS44Ny42NnE2LjM2LjI3IDguODIgMy45NSIvPjxwYXRoIGQ9Ik02IDhsNC0xIi8+PHBhdGggZD0iTTkgMTJsLTEgNSIvPjxwYXRoIGQ9Ik0xNyA2bC0yIDMiLz48L3N2Zz4=";
+                  }}
+                />
+                <h3 className="text-lg font-medium">Brain Games</h3>
               </CardContent>
             </Card>
           </Link>

@@ -2,7 +2,7 @@
 import { useAuth } from "@/lib/auth/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
-  Bell, Pill, Calendar, Camera, Palette, 
+  Bell, Pill, Calendar, Camera, 
   LogOut, Menu, X, HeartPulse, User, Activity, Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -86,11 +86,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       icon: <Camera className="h-6 w-6" />,
     },
     {
-      name: "Theme",
-      path: "/theme",
-      icon: <Palette className="h-6 w-6" />,
-    },
-    {
       name: "Profile",
       path: "/profile",
       icon: <User className="h-6 w-6" />,
@@ -107,7 +102,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   if (loading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
         <div className="flex flex-col items-center">
           <HeartPulse className="h-16 w-16 text-primary pulse" />
           <p className="mt-4 text-primary font-medium">Loading your care dashboard...</p>
@@ -117,7 +112,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-primary text-white p-4 flex justify-between items-center shadow-md backdrop-blur-lg bg-opacity-95">
         <div className="flex items-center gap-2">

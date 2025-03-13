@@ -14,7 +14,6 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import MyMedications from "./pages/MyMedications";
 import Schedule from "./pages/Schedule";
 import IdentifyPill from "./pages/IdentifyPill";
-import ThemeSettings from "./pages/ThemeSettings";
 import AddMedication from "./pages/AddMedication";
 import EditMedication from "./pages/EditMedication";
 import CaregiverConnect from "./pages/CaregiverConnect";
@@ -54,7 +53,6 @@ const App = () => (
               <Route path="/identify" element={<IdentifyPill />} />
               <Route path="/health-tracking" element={<HealthTracking />} />
               <Route path="/connect" element={<CaregiverConnect />} />
-              <Route path="/theme" element={<ThemeSettings />} />
               
               {/* Admin route */}
               <Route path="/admin/config" element={<AdminConfig />} />
