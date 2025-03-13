@@ -1,7 +1,6 @@
 
 # MediHelper: Smart Medication Management App
 
-![MediHelper Dashboard](public/og-image.png)
 
 ## Overview
 
