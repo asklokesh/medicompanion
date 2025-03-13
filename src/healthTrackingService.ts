@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "./supabase/client";
 
 export interface HealthData {
   day: string;
