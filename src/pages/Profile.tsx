@@ -1,3 +1,4 @@
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -11,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import { PlusCircle, Trash2, X } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Json } from "@/integrations/supabase/types";
 
@@ -80,7 +81,7 @@ const Profile = () => {
         if (error) throw error;
         
         if (data) {
-          // Type casting the dear_ones from Json to DearOne[]
+          // Safely type cast the dear_ones from Json to DearOne[]
           const dearOnes = (data.dear_ones as any as DearOne[]) || [];
           
           setProfile({
