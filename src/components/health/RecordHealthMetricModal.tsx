@@ -59,47 +59,29 @@ export function RecordHealthMetricModal({
     defaultValues: {
       type: "blood_pressure",
       value: "",
-      unit: "",
+      unit: "mmHg",
     },
   });
 
   const onSubmit = async (data: HealthMetricFormValues) => {
     setIsLoading(true);
     try {
-      // Set the appropriate unit based on type
-      let unit = "";
-      switch (data.type) {
-        case "blood_pressure":
-          unit = "mmHg";
-          break;
-        case "heart_rate":
-          unit = "BPM";
-          break;
-        case "blood_glucose":
-          unit = "mg/dL";
-          break;
-        case "temperature":
-          unit = "°F";
-          break;
-        case "weight":
-          unit = "lbs";
-          break;
-        default:
-          unit = "";
-      }
-
       const success = await recordHealthMetric(
         {
           type: data.type,
           value: data.value,
-          unit: unit || data.unit,
+          unit: data.unit,
         },
         user?.id
       );
 
       if (success) {
         toast.success("Health metric recorded successfully");
-        form.reset();
+        form.reset({
+          type: "blood_pressure",
+          value: "",
+          unit: "mmHg",
+        });
         onMetricAdded();
         onOpenChange(false);
       } else {
@@ -113,7 +95,7 @@ export function RecordHealthMetricModal({
     }
   };
 
-  // Set the unit field based on the selected type
+  // Set the unit field and placeholder based on the selected type
   const handleTypeChange = (type: string) => {
     form.setValue("type", type);
     
@@ -141,6 +123,25 @@ export function RecordHealthMetricModal({
         unit = "lbs";
         placeholder = "160";
         break;
+      case "oxygen_saturation":
+        unit = "%";
+        placeholder = "98";
+        break;
+      case "steps":
+        unit = "steps";
+        placeholder = "8500";
+        break;
+      case "sleep":
+        unit = "hours";
+        placeholder = "7.5";
+        break;
+      case "water_intake":
+        unit = "oz";
+        placeholder = "64";
+        break;
+      default:
+        unit = "";
+        placeholder = "";
     }
     
     form.setValue("unit", unit);
@@ -185,6 +186,10 @@ export function RecordHealthMetricModal({
                       <SelectItem value="blood_glucose">Blood Glucose</SelectItem>
                       <SelectItem value="temperature">Temperature</SelectItem>
                       <SelectItem value="weight">Weight</SelectItem>
+                      <SelectItem value="oxygen_saturation">Oxygen Saturation</SelectItem>
+                      <SelectItem value="steps">Steps</SelectItem>
+                      <SelectItem value="sleep">Sleep</SelectItem>
+                      <SelectItem value="water_intake">Water Intake</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

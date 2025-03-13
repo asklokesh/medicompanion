@@ -2,13 +2,14 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Activity, Heart, TrendingUp, Thermometer, Plus, Droplets, LineChart, Clock } from "lucide-react";
+import { Activity, Heart, TrendingUp, Thermometer, Plus, Droplets, LineChart, Clock, Weight, Watch, Smartphone } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from "react";
 import { getHealthTrendsData, getLatestHealthMetrics, HealthData, HealthMetric } from "@/services/healthTrackingService";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { RecordHealthMetricModal } from "@/components/health/RecordHealthMetricModal";
+import { DeviceIntegrationModal } from "@/components/health/DeviceIntegrationModal";
 
 const HealthTracking = () => {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ const HealthTracking = () => {
   const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [recordMetricOpen, setRecordMetricOpen] = useState(false);
+  const [deviceIntegrationOpen, setDeviceIntegrationOpen] = useState(false);
 
   useEffect(() => {
     const fetchHealthData = async () => {
@@ -75,7 +77,7 @@ const HealthTracking = () => {
             <h1 className="text-3xl font-bold text-gray-900">Health Tracking</h1>
             <p className="text-gray-500 mt-2">Monitor your vital signs and health metrics</p>
           </div>
-          <div>
+          <div className="flex space-x-2">
             <Button 
               onClick={() => setRecordMetricOpen(true)}
               className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
@@ -164,17 +166,17 @@ const HealthTracking = () => {
           <Card className="hover:shadow-md transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-gray-500 flex items-center gap-2">
-                <Thermometer className="h-4 w-4 text-red-500" /> Temperature
+                <Weight className="h-4 w-4 text-blue-500" /> Weight
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{getMetricByType('temperature')?.value || '98.6'}{getMetricByType('temperature')?.unit || '°F'}</div>
+              <div className="text-2xl font-bold">{getMetricByType('weight')?.value || '160'} {getMetricByType('weight')?.unit || 'lbs'}</div>
               <div className="flex items-center gap-2 text-sm text-green-600 mt-1">
-                <TrendingUp className="h-4 w-4" /> Normal
+                <TrendingUp className="h-4 w-4" /> Stable
               </div>
               <div className="text-xs text-gray-500 mt-1">
-                Last recorded: {getMetricByType('temperature') 
-                  ? new Date(getMetricByType('temperature')!.recorded_at).toLocaleString('en-US', { 
+                Last recorded: {getMetricByType('weight') 
+                  ? new Date(getMetricByType('weight')!.recorded_at).toLocaleString('en-US', { 
                       month: 'short', 
                       day: 'numeric', 
                       hour: 'numeric', 
@@ -217,9 +219,12 @@ const HealthTracking = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Connect Health Devices</h2>
-              <p className="text-gray-600 mt-1">Sync with your smart health devices for automatic tracking</p>
+              <p className="text-gray-600 mt-1">Sync with your Fitbit, Apple Watch, or other smart health devices</p>
             </div>
-            <Button className="bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600">
+            <Button 
+              className="bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600"
+              onClick={() => setDeviceIntegrationOpen(true)}
+            >
               Connect Devices
             </Button>
           </div>
@@ -230,6 +235,11 @@ const HealthTracking = () => {
         open={recordMetricOpen}
         onOpenChange={setRecordMetricOpen}
         onMetricAdded={handleMetricAdded}
+      />
+
+      <DeviceIntegrationModal
+        open={deviceIntegrationOpen}
+        onOpenChange={setDeviceIntegrationOpen}
       />
     </DashboardLayout>
   );
