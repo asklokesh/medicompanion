@@ -13,7 +13,6 @@ const IdentifyPill = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [colorTheme] = useState('blue');
   const [matchingPills, setMatchingPills] = useState<PillMatch[]>([]);
   const [recentSearches, setRecentSearches] = useState([
     { id: 1, name: "Round white pill with L484", date: "Mar 9", result: "Acetaminophen 500mg" },
@@ -22,47 +21,16 @@ const IdentifyPill = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  // Theme colors
-  const themes = {
-    blue: {
-      primary: 'from-blue-500 to-indigo-600',
-      accent: 'from-indigo-500 to-purple-600',
-      button: 'bg-blue-600 hover:bg-blue-700',
-      badge: 'bg-blue-100 text-blue-800',
-      highlight: 'bg-blue-50',
-      active: 'text-blue-800',
-      border: 'border-blue-200'
-    },
-    teal: {
-      primary: 'from-teal-500 to-green-600',
-      accent: 'from-emerald-500 to-teal-600',
-      button: 'bg-teal-600 hover:bg-teal-700',
-      badge: 'bg-teal-100 text-teal-800',
-      highlight: 'bg-teal-50',
-      active: 'text-teal-800',
-      border: 'border-teal-200'
-    },
-    purple: {
-      primary: 'from-purple-500 to-pink-600',
-      accent: 'from-fuchsia-500 to-purple-600',
-      button: 'bg-purple-600 hover:bg-purple-700',
-      badge: 'bg-purple-100 text-purple-800',
-      highlight: 'bg-purple-50',
-      active: 'text-purple-800',
-      border: 'border-purple-200'
-    },
-    orange: {
-      primary: 'from-orange-500 to-amber-600',
-      accent: 'from-amber-500 to-orange-600',
-      button: 'bg-orange-600 hover:bg-orange-700',
-      badge: 'bg-orange-100 text-orange-800',
-      highlight: 'bg-orange-50',
-      active: 'text-orange-800',
-      border: 'border-orange-200'
-    }
+  // Theme colors - using warm color palette (yellows, browns, oranges, reds)
+  const theme = {
+    primary: 'from-amber-500 to-orange-600',
+    accent: 'from-orange-500 to-red-600',
+    button: 'bg-amber-600 hover:bg-amber-700',
+    badge: 'bg-amber-100 text-amber-800',
+    highlight: 'bg-amber-50',
+    active: 'text-amber-800',
+    border: 'border-amber-200'
   };
-  
-  const theme = themes[colorTheme];
 
   const handleStartScan = () => {
     if (fileInputRef.current) {
@@ -224,7 +192,7 @@ const IdentifyPill = () => {
             
             <Button
               onClick={handleStartScan}
-              className="bg-white text-indigo-700 hover:bg-white/90 border-2 border-white h-12 rounded-xl shadow-md flex items-center justify-center"
+              className="bg-white text-orange-700 hover:bg-white/90 border-2 border-white h-12 rounded-xl shadow-md flex items-center justify-center"
               disabled={isScanning}
             >
               {isScanning ? (
@@ -259,7 +227,7 @@ const IdentifyPill = () => {
             <CardContent className="p-0">
               {isSearching || isScanning ? (
                 <div className="p-12 flex flex-col items-center justify-center">
-                  <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
+                  <Loader2 className="h-12 w-12 animate-spin text-amber-600 mb-4" />
                   <p className="text-lg text-gray-600">
                     {isScanning ? "Analyzing pill image..." : "Searching medication database..."}
                   </p>
@@ -269,24 +237,29 @@ const IdentifyPill = () => {
                   {matchingPills.map(pill => (
                     <div key={pill.id} className="p-4">
                       <div className="flex items-start">
-                        <div className={`w-14 h-14 rounded-full ${pill.imageColor || 'bg-gray-100'} flex items-center justify-center mr-4 flex-shrink-0`}>
+                        <div className={`w-14 h-14 rounded-full ${pill.imageColor || 'bg-amber-100'} flex items-center justify-center mr-4 flex-shrink-0`}>
                           <span className="text-3xl">💊</span>
                         </div>
                         <div className="flex-grow">
                           <h3 className="text-xl font-bold">{pill.name}</h3>
                           <p className="text-gray-600 text-sm">{pill.appearance}</p>
-                          <div className="flex items-center mt-2">
+                          <div className="flex flex-wrap items-center mt-2 gap-2">
                             <span className={`${theme.badge} px-3 py-1 rounded-full text-xs`}>
                               {pill.purpose}
                             </span>
                             {pill.manufacturer && (
-                              <span className="ml-2 text-xs text-gray-500">
+                              <span className="text-xs text-gray-500">
                                 By {pill.manufacturer}
+                              </span>
+                            )}
+                            {pill.source && (
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                                Source: {pill.source}
                               </span>
                             )}
                           </div>
                           <div className="flex justify-between mt-3">
-                            <Button variant="ghost" size="sm" className="text-blue-600 flex items-center">
+                            <Button variant="ghost" size="sm" className="text-amber-600 flex items-center">
                               <Info className="h-4 w-4 mr-1" /> More Details
                             </Button>
                             <Button 
@@ -312,7 +285,7 @@ const IdentifyPill = () => {
                 </div>
               )}
               
-              <div className="bg-gray-50 p-4 flex justify-between items-center">
+              <div className="bg-amber-50 p-4 flex justify-between items-center">
                 <span className="text-sm text-gray-600">Don't see your medication?</span>
                 <Button variant="outline" size="sm" className="flex items-center">
                   <PlusCircle className="h-4 w-4 mr-1" /> Add Manually
@@ -326,7 +299,7 @@ const IdentifyPill = () => {
             <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg font-bold">Recent Searches</h2>
               {recentSearches.length > 0 && (
-                <Button variant="ghost" size="sm" className="text-blue-600" onClick={handleClearRecent}>Clear All</Button>
+                <Button variant="ghost" size="sm" className="text-amber-600" onClick={handleClearRecent}>Clear All</Button>
               )}
             </div>
             <CardContent className="p-0">
@@ -394,7 +367,7 @@ const IdentifyPill = () => {
             <CardContent className="p-4">
               <div className="space-y-3">
                 <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4">
-                  <FileText className="h-5 w-5 mr-3 text-blue-600" />
+                  <FileText className="h-5 w-5 mr-3 text-amber-600" />
                   <div>
                     <h3 className="font-medium">Medication Safety Guide</h3>
                     <p className="text-xs text-gray-500">Tips for safely managing your medications</p>
@@ -402,7 +375,7 @@ const IdentifyPill = () => {
                 </Button>
                 
                 <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4">
-                  <HelpCircle className="h-5 w-5 mr-3 text-purple-600" />
+                  <HelpCircle className="h-5 w-5 mr-3 text-orange-600" />
                   <div>
                     <h3 className="font-medium">Contact Pharmacy</h3>
                     <p className="text-xs text-gray-500">Ask your pharmacist about your medications</p>
