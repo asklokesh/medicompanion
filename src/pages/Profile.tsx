@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useState, useEffect, useRef } from "react";
@@ -14,6 +13,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { PlusCircle, Trash2, X } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { Json } from "@/integrations/supabase/types";
+
+interface DearOne {
+  id: string;
+  name: string;
+  relation: string;
+  image_url?: string;
+}
 
 interface Profile {
   id: string;
@@ -25,13 +32,6 @@ interface Profile {
   created_at?: string;
   updated_at?: string;
   dear_ones?: DearOne[];
-}
-
-interface DearOne {
-  id: string;
-  name: string;
-  relation: string;
-  image_url?: string;
 }
 
 const Profile = () => {
@@ -80,6 +80,9 @@ const Profile = () => {
         if (error) throw error;
         
         if (data) {
+          // Type casting the dear_ones from Json to DearOne[]
+          const dearOnes = (data.dear_ones as any as DearOne[]) || [];
+          
           setProfile({
             id: data.id,
             full_name: data.full_name || "",
@@ -87,7 +90,7 @@ const Profile = () => {
             avatar_url: data.avatar_url,
             date_of_birth: data.date_of_birth,
             bio: data.bio,
-            dear_ones: data.dear_ones || [],
+            dear_ones: dearOnes,
             created_at: data.created_at,
             updated_at: data.updated_at
           });
@@ -117,6 +120,7 @@ const Profile = () => {
     try {
       setIsSaving(true);
       
+      // Convert DearOne[] to Json before saving to database
       const { error } = await supabase
         .from('user_profiles')
         .update({
@@ -126,7 +130,7 @@ const Profile = () => {
           ...(profile.date_of_birth && { date_of_birth: profile.date_of_birth }),
           ...(profile.bio && { bio: profile.bio }),
           ...(profile.avatar_url && { avatar_url: profile.avatar_url }),
-          dear_ones: profile.dear_ones
+          dear_ones: profile.dear_ones as unknown as Json
         })
         .eq('id', user.id);
       
