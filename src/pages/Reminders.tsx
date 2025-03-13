@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { AddReminderModal } from "@/components/reminders/AddReminderModal";
 
 interface Reminder {
   id: number;
@@ -81,6 +82,7 @@ const Reminders = () => {
   const [notificationPreferences, setNotificationPreferences] = useState<NotificationMethod[]>([
     'push', 'sound', 'vibration', 'visual'
   ]);
+  const [addReminderOpen, setAddReminderOpen] = useState(false);
 
   const toggleReminder = (id: number) => {
     setReminders(reminders.map(reminder => 
@@ -104,10 +106,10 @@ const Reminders = () => {
 
   const getIconForType = (type: string) => {
     switch(type) {
-      case 'medication': return <Bell className="h-5 w-5 text-primary" />;
-      case 'appointment': return <Calendar className="h-5 w-5 text-accent" />;
-      case 'activity': return <Clock className="h-5 w-5 text-green-500" />;
-      default: return <Bell className="h-5 w-5 text-primary" />;
+      case 'medication': return <Bell className="h-5 w-5 text-amber-500" />;
+      case 'appointment': return <Calendar className="h-5 w-5 text-orange-500" />;
+      case 'activity': return <Clock className="h-5 w-5 text-red-500" />;
+      default: return <Bell className="h-5 w-5 text-amber-500" />;
     }
   };
 
@@ -119,6 +121,22 @@ const Reminders = () => {
       case 'visual': return <Eye className="h-4 w-4" />;
       case 'voice': return <Volume2 className="h-4 w-4" />;
     }
+  };
+
+  const handleReminderAdded = () => {
+    // In a real app, we would refetch the reminders
+    // For now, we'll just add a mock reminder
+    const newReminder: Reminder = {
+      id: reminders.length + 1,
+      title: "New Reminder",
+      time: "03:00 PM",
+      date: "Today",
+      completed: false,
+      type: 'medication',
+      notificationMethods: ['push', 'sound']
+    };
+    
+    setReminders([...reminders, newReminder]);
   };
 
   return (
@@ -134,18 +152,21 @@ const Reminders = () => {
               variant="outline" 
               size="icon"
               onClick={() => setShowSettings(!showSettings)}
-              className={showSettings ? "bg-primary/10 text-primary" : ""}
+              className={showSettings ? "bg-orange-100 text-orange-500 border-orange-200" : ""}
             >
               <Settings className="h-4 w-4" />
             </Button>
-            <Button>
+            <Button 
+              onClick={() => setAddReminderOpen(true)}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            >
               <Plus className="h-4 w-4 mr-2" /> Add New
             </Button>
           </div>
         </div>
         
         {showSettings && (
-          <Card className="bg-gray-50">
+          <Card className="bg-orange-50 border-orange-100">
             <CardHeader>
               <CardTitle className="text-lg">Reminder Settings</CardTitle>
               <CardDescription>Customize how you receive reminders</CardDescription>
@@ -246,7 +267,7 @@ const Reminders = () => {
                     <Button 
                       variant={reminder.completed ? "default" : "outline"} 
                       size="icon"
-                      className={`${reminder.completed ? 'bg-primary text-white' : 'text-gray-400'} h-10 w-10 rounded-full`}
+                      className={`${reminder.completed ? 'bg-amber-500 text-white' : 'text-gray-400'} h-10 w-10 rounded-full`}
                       onClick={() => toggleReminder(reminder.id)}
                     >
                       {reminder.completed ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
@@ -267,7 +288,7 @@ const Reminders = () => {
                       </div>
                       <div className="mt-2 flex gap-1">
                         {reminder.notificationMethods.map((method) => (
-                          <span key={method} className="inline-flex items-center p-1 bg-gray-100 rounded-full text-gray-600">
+                          <span key={method} className="inline-flex items-center p-1 bg-amber-50 rounded-full text-amber-600">
                             {getNotificationMethodIcon(method)}
                           </span>
                         ))}
@@ -297,18 +318,24 @@ const Reminders = () => {
           ))}
         </div>
         
-        <div className="p-6 bg-gradient-to-r from-blue-50 to-teal-50 rounded-xl shadow-sm mt-4">
+        <div className="p-6 bg-gradient-to-r from-amber-50 to-red-50 rounded-xl shadow-sm mt-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Set Up Voice Reminders</h2>
               <p className="text-gray-600 mt-1">Get friendly audio reminders for your medications</p>
             </div>
-            <Button variant="outline" className="border-teal-200 bg-white">
+            <Button variant="outline" className="border-amber-200 bg-white">
               Enable Voice Reminders
             </Button>
           </div>
         </div>
       </div>
+      
+      <AddReminderModal 
+        open={addReminderOpen} 
+        onOpenChange={setAddReminderOpen}
+        onReminderAdded={handleReminderAdded}
+      />
     </DashboardLayout>
   );
 };

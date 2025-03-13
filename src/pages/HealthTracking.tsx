@@ -4,18 +4,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Activity, Heart, TrendingUp, Thermometer, Plus, Droplets, LineChart, Clock } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const healthData = [
-  { day: 'Mon', bp: 120, pulse: 72, glucose: 110 },
-  { day: 'Tue', bp: 118, pulse: 74, glucose: 105 },
-  { day: 'Wed', bp: 122, pulse: 70, glucose: 112 },
-  { day: 'Thu', bp: 125, pulse: 73, glucose: 108 },
-  { day: 'Fri', bp: 119, pulse: 71, glucose: 106 },
-  { day: 'Sat', bp: 121, pulse: 69, glucose: 104 },
-  { day: 'Sun', bp: 117, pulse: 70, glucose: 102 },
-];
+import { useEffect, useState } from "react";
+import { getHealthTrendsData, getLatestHealthMetrics, HealthData, HealthMetric } from "@/services/healthTrackingService";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { RecordHealthMetricModal } from "@/components/health/RecordHealthMetricModal";
 
 const HealthTracking = () => {
+  const { user } = useAuth();
+  const [healthData, setHealthData] = useState<HealthData[]>([]);
+  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [recordMetricOpen, setRecordMetricOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchHealthData = async () => {
+      try {
+        setLoading(true);
+        const [trendsData, metricsData] = await Promise.all([
+          getHealthTrendsData(user?.id),
+          getLatestHealthMetrics(user?.id)
+        ]);
+        
+        setHealthData(trendsData);
+        setHealthMetrics(metricsData);
+      } catch (error) {
+        console.error("Error fetching health data:", error);
+        toast.error("Failed to load health data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHealthData();
+  }, [user]);
+
+  const getMetricByType = (type: string): HealthMetric | undefined => {
+    return healthMetrics.find(metric => metric.type === type);
+  };
+
+  const handleMetricAdded = async () => {
+    try {
+      // Refresh the metrics data
+      const metricsData = await getLatestHealthMetrics(user?.id);
+      setHealthMetrics(metricsData);
+      
+      // Refresh the trends data
+      const trendsData = await getHealthTrendsData(user?.id);
+      setHealthData(trendsData);
+    } catch (error) {
+      console.error("Error refreshing health data:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+          <div className="animate-spin h-8 w-8 border-4 border-amber-500 border-t-transparent rounded-full"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -25,7 +76,10 @@ const HealthTracking = () => {
             <p className="text-gray-500 mt-2">Monitor your vital signs and health metrics</p>
           </div>
           <div>
-            <Button>
+            <Button 
+              onClick={() => setRecordMetricOpen(true)}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            >
               <Plus className="h-4 w-4 mr-2" /> Record New
             </Button>
           </div>
@@ -39,41 +93,71 @@ const HealthTracking = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">120/80</div>
+              <div className="text-2xl font-bold">{getMetricByType('blood_pressure')?.value || '120/80'}</div>
               <div className="flex items-center gap-2 text-sm text-green-600 mt-1">
                 <TrendingUp className="h-4 w-4" /> Normal
               </div>
-              <div className="text-xs text-gray-500 mt-1">Last recorded: Today, 8:30 AM</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Last recorded: {getMetricByType('blood_pressure') 
+                  ? new Date(getMetricByType('blood_pressure')!.recorded_at).toLocaleString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: 'numeric', 
+                      minute: 'numeric', 
+                      hour12: true 
+                    }) 
+                  : 'Today, 8:30 AM'}
+              </div>
             </CardContent>
           </Card>
           
           <Card className="hover:shadow-md transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-gray-500 flex items-center gap-2">
-                <Activity className="h-4 w-4 text-blue-500" /> Heart Rate
+                <Activity className="h-4 w-4 text-orange-500" /> Heart Rate
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">72 BPM</div>
+              <div className="text-2xl font-bold">{getMetricByType('heart_rate')?.value || '72'} {getMetricByType('heart_rate')?.unit || 'BPM'}</div>
               <div className="flex items-center gap-2 text-sm text-green-600 mt-1">
                 <TrendingUp className="h-4 w-4" /> Resting
               </div>
-              <div className="text-xs text-gray-500 mt-1">Last recorded: Today, 8:30 AM</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Last recorded: {getMetricByType('heart_rate') 
+                  ? new Date(getMetricByType('heart_rate')!.recorded_at).toLocaleString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: 'numeric', 
+                      minute: 'numeric', 
+                      hour12: true 
+                    }) 
+                  : 'Today, 8:30 AM'}
+              </div>
             </CardContent>
           </Card>
           
           <Card className="hover:shadow-md transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-gray-500 flex items-center gap-2">
-                <Droplets className="h-4 w-4 text-purple-500" /> Blood Glucose
+                <Droplets className="h-4 w-4 text-amber-500" /> Blood Glucose
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">105 mg/dL</div>
+              <div className="text-2xl font-bold">{getMetricByType('blood_glucose')?.value || '105'} {getMetricByType('blood_glucose')?.unit || 'mg/dL'}</div>
               <div className="flex items-center gap-2 text-sm text-green-600 mt-1">
                 <TrendingUp className="h-4 w-4" /> Normal
               </div>
-              <div className="text-xs text-gray-500 mt-1">Last recorded: Today, 7:00 AM</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Last recorded: {getMetricByType('blood_glucose') 
+                  ? new Date(getMetricByType('blood_glucose')!.recorded_at).toLocaleString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: 'numeric', 
+                      minute: 'numeric', 
+                      hour12: true 
+                    }) 
+                  : 'Today, 7:00 AM'}
+              </div>
             </CardContent>
           </Card>
           
@@ -84,11 +168,21 @@ const HealthTracking = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">98.6°F</div>
+              <div className="text-2xl font-bold">{getMetricByType('temperature')?.value || '98.6'}{getMetricByType('temperature')?.unit || '°F'}</div>
               <div className="flex items-center gap-2 text-sm text-green-600 mt-1">
                 <TrendingUp className="h-4 w-4" /> Normal
               </div>
-              <div className="text-xs text-gray-500 mt-1">Last recorded: Yesterday, 6:00 PM</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Last recorded: {getMetricByType('temperature') 
+                  ? new Date(getMetricByType('temperature')!.recorded_at).toLocaleString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      hour: 'numeric', 
+                      minute: 'numeric', 
+                      hour12: true 
+                    }) 
+                  : 'Yesterday, 6:00 PM'}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -97,7 +191,7 @@ const HealthTracking = () => {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Weekly Health Trends</span>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button variant="outline" size="sm" className="flex items-center gap-1 border-amber-200 text-amber-700">
                 <LineChart className="h-4 w-4" /> Weekly View
               </Button>
             </CardTitle>
@@ -110,27 +204,33 @@ const HealthTracking = () => {
                   <XAxis dataKey="day" />
                   <YAxis />
                   <Tooltip />
-                  <Area type="monotone" dataKey="bp" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="pulse" stroke="#4ADE80" fill="#4ADE80" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="glucose" stroke="#F472B6" fill="#F472B6" fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="bp" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.2} name="Blood Pressure" />
+                  <Area type="monotone" dataKey="pulse" stroke="#EA580C" fill="#EA580C" fillOpacity={0.2} name="Heart Rate" />
+                  <Area type="monotone" dataKey="glucose" stroke="#EF4444" fill="#EF4444" fillOpacity={0.2} name="Blood Glucose" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
         
-        <div className="p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl shadow-sm">
+        <div className="p-6 bg-gradient-to-r from-amber-50 to-red-50 rounded-xl shadow-sm">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Connect Health Devices</h2>
               <p className="text-gray-600 mt-1">Sync with your smart health devices for automatic tracking</p>
             </div>
-            <Button className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600">
+            <Button className="bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-600 hover:to-red-600">
               Connect Devices
             </Button>
           </div>
         </div>
       </div>
+
+      <RecordHealthMetricModal
+        open={recordMetricOpen}
+        onOpenChange={setRecordMetricOpen}
+        onMetricAdded={handleMetricAdded}
+      />
     </DashboardLayout>
   );
 };

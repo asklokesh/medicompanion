@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pill, Calendar, Camera, Clock, AlertCircle } from "lucide-react";
+import { Pill, Calendar, Camera, Clock, AlertCircle, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -64,7 +64,6 @@ const Dashboard = () => {
         if (data && !error) {
           setMedications(data);
           
-          // Filter medications for current time of day
           const filtered = data.filter(med => 
             med.time_of_day.includes(timeOfDay)
           );
@@ -85,7 +84,6 @@ const Dashboard = () => {
           .gte('taken_at', today.toISOString());
         
         if (data && !error) {
-          // Convert data to MedicationLog type with proper type casting
           const typedLogs: MedicationLog[] = data.map(log => ({
             id: log.id,
             medication_id: log.medication_id,
@@ -131,7 +129,6 @@ const Dashboard = () => {
         
         toast.success("Medications marked as taken!");
         
-        // Fetch updated logs
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
@@ -142,7 +139,6 @@ const Dashboard = () => {
           .gte('taken_at', today.toISOString());
           
         if (!fetchError && updatedLogs) {
-          // Convert to properly typed MedicationLog objects
           const typedLogs: MedicationLog[] = updatedLogs.map(log => ({
             id: log.id,
             medication_id: log.medication_id,
@@ -181,7 +177,6 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Welcome Card */}
         <Card className="overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
@@ -222,7 +217,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Medications Due Now */}
         {currentMedications.length > 0 && (
           <Card className="border-l-4 border-l-red-500 overflow-hidden">
             <CardContent className="p-0">
@@ -273,7 +267,6 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* No Medications Message */}
         {medications.length === 0 && (
           <Card>
             <CardContent className="p-6 text-center space-y-4">
@@ -289,12 +282,11 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Quick Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <Link to="/medications" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                <Pill className="h-10 w-10 text-primary mb-2" />
+                <Pill className="h-10 w-10 text-amber-500 mb-2" />
                 <h3 className="text-lg font-medium">My Medications</h3>
               </CardContent>
             </Card>
@@ -303,7 +295,7 @@ const Dashboard = () => {
           <Link to="/schedule" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                <Calendar className="h-10 w-10 text-primary mb-2" />
+                <Calendar className="h-10 w-10 text-orange-500 mb-2" />
                 <h3 className="text-lg font-medium">Schedule</h3>
               </CardContent>
             </Card>
@@ -312,7 +304,7 @@ const Dashboard = () => {
           <Link to="/identify" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                <Camera className="h-10 w-10 text-primary mb-2" />
+                <Camera className="h-10 w-10 text-red-500 mb-2" />
                 <h3 className="text-lg font-medium">Identify Pill</h3>
               </CardContent>
             </Card>
@@ -321,14 +313,8 @@ const Dashboard = () => {
           <Link to="/brain-games" className="block">
             <Card className="h-full hover:shadow-md transition-shadow">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                <img 
-                  src="/brain-games-icon.png" 
-                  alt="Brain Games"
-                  className="h-10 w-10 object-contain mb-2"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWJyYWluIj48cGF0aCBkPSJNMTkuMjIgMTIuOTRhNiA2IDAgMCAwLTkuNC02LjcyIi8+PHBhdGggZD0iTTcuNzYgMTUuMjdhMy42IDMuNiAwIDAxLTIuNjgtLjQuODguODggMCAwMS0uMzctLjg3bC41LTMuMzlhMS41NiAxLjU2IDAgMDAtLjA5LS43MSAxLjU5IDEuNTkgMCAwMC0uNTctLjcxIDEuNTUgMS41NSAwIDAxLS41Mi0xLjY3QTMuNjQgMy42NCAwIDAxNi43OCA1LjQzYTEuNTUgMS41NSAwIDAxMS42OC0uMjlBMy43NCAzLjc0IDAgMDExMi4yIDQuNWExLjU2IDEuNTYgMCAwMTEuMDYgMS4zOGwuMjcgMi44OGExLjQxIDEuNDEgMCAwMDIuODItLjMxbC0uMjctMy4zM0ExLjU1IDEuNTUgMCAwMTE3IDMuMDFhMy43MyAzLjczIDAgMDEzIDIuMiAxLjU2IDEuNTYgMCAwMS0uMzUgMS43M2wtLjQ5LjVjLS4yOS4zLS4zOC43NC0uMiAxLjEyLjEzLjM5LjQ2LjY1Ljg2LjcybDIuMTUuMzZjLjI0LjA0LjUuMTIuNzIuMjRhMS41OSAxLjU5IDAgMDEuNi43MyAxLjU1IDEuNTUgMCAwMS0uMzMgMS43QTMuNzYgMy43NiAwIDAxMjAgMTVhMS41NiAxLjU2IDAgMDEtMS45NS44bC0yLjUtMS4yNWMtLjM1LS4xNy0uNzMtLjEzLTEuMDcuMWEuOTQuOTQgMCAwMC0uNC43N2wzLjUxIDMuNSIvPjxwYXRoIGQ9Ik02LjMgMTAuOSAzLjA0IDguODZhMy42IDMuNiAwIDAxLTEuMzgtNC4wMkEzLjcgMy43IDAgMDE2LjI0IDNhMy42IDMuNiAwIDAxMi43IDEuMjFsMi40MSAyLjQiLz48cGF0aCBkPSJNMTEuMzUgMTguMiAxMyAxNS45YTEuMjUgMS4yNSAwIDAgMC0uMjctMS43OCAzLjQ0IDMuNDQgMCAwIDAtMy0uNCAzLjQgMy40IDAgMDAtLjY0LjM0Yy0uNzMuNTMtLjUyIDEuNzMtLjUyIDIuNDMgMCAxLjQzLS4yOCAyLjY1LTEuMjggMy43MS0uNTYuNi0xLjEuNjYtMS44Ny42NnE2LjM2LjI3IDguODIgMy45NSIvPjxwYXRoIGQ9Ik02IDhsNC0xIi8+PHBhdGggZD0iTTkgMTJsLTEgNSIvPjxwYXRoIGQ9Ik0xNyA2bC0yIDMiLz48L3N2Zz4=";
-                  }}
+                <Brain 
+                  className="h-10 w-10 text-amber-600 mb-2"
                 />
                 <h3 className="text-lg font-medium">Brain Games</h3>
               </CardContent>
