@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock } from "lucide-react";
 import type { Medication } from "@/hooks/useDashboardData";
+import VoiceReminderService from "@/services/voiceReminderService";
 
 interface CurrentMedicationsCardProps {
   currentMedications: Medication[];
@@ -24,6 +24,19 @@ export function CurrentMedicationsCard({
 
   const handleTakeMedications = async () => {
     await markMedicationsTaken();
+  };
+
+  const handleMarkTaken = async () => {
+    markMedicationsTaken();
+    
+    // Add voice notification if enabled
+    const voiceService = VoiceReminderService.getInstance();
+    if (voiceService.isEnabled()) {
+      const timeStr = timeOfDay === 'morning' ? 'morning' : 
+                      timeOfDay === 'afternoon' ? 'afternoon' : 'evening';
+      
+      voiceService.speak(`Great job! You've taken your ${timeStr} medications. Keep up the good work!`);
+    }
   };
 
   if (currentMedications.length === 0) {
@@ -108,7 +121,7 @@ export function CurrentMedicationsCard({
             <Button
               size="lg"
               className="w-full text-lg rounded-xl h-14"
-              onClick={handleTakeMedications}
+              onClick={handleMarkTaken}
             >
               Take All Medications
             </Button>

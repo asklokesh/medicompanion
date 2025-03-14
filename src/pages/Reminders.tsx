@@ -1,4 +1,3 @@
-
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import {
   Bell, Plus, Check, Clock, Calendar, X, Settings, 
   Volume2, Vibrate, Eye, ChevronDown 
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Select,
@@ -24,6 +23,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AddReminderModal } from "@/components/reminders/AddReminderModal";
+import VoiceReminderService from "@/services/voiceReminderService";
 
 interface Reminder {
   id: number;
@@ -83,25 +83,82 @@ const Reminders = () => {
     'push', 'sound', 'vibration', 'visual'
   ]);
   const [addReminderOpen, setAddReminderOpen] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+
+  useEffect(() => {
+    const voiceService = VoiceReminderService.getInstance();
+    setVoiceEnabled(voiceService.isEnabled());
+  }, []);
 
   const toggleReminder = (id: number) => {
     setReminders(reminders.map(reminder => 
       reminder.id === id ? { ...reminder, completed: !reminder.completed } : reminder
     ));
     
-    // Show toast notification
     const reminder = reminders.find(r => r.id === id);
     if (reminder) {
       toast.success(`${reminder.completed ? 'Unmarked' : 'Marked'} "${reminder.title}" as ${reminder.completed ? 'incomplete' : 'complete'}`);
     }
   };
 
+  const toggleVoiceReminders = () => {
+    const voiceService = VoiceReminderService.getInstance();
+    const isEnabled = voiceService.toggleEnabled();
+    setVoiceEnabled(isEnabled);
+    
+    if (isEnabled) {
+      toast.success("Voice reminders enabled");
+      voiceService.speak("Voice reminders are now enabled. I'll remind you when it's time to take your medications.");
+    } else {
+      toast.info("Voice reminders disabled");
+    }
+
+    if (isEnabled && !notificationPreferences.includes('voice')) {
+      setNotificationPreferences([...notificationPreferences, 'voice']);
+    } else if (!isEnabled && notificationPreferences.includes('voice')) {
+      setNotificationPreferences(notificationPreferences.filter(m => m !== 'voice'));
+    }
+  };
+
+  const testVoiceReminder = () => {
+    if (!voiceEnabled) {
+      toast.error("Voice reminders are disabled. Please enable them first.");
+      return;
+    }
+    
+    const voiceService = VoiceReminderService.getInstance();
+    const currentReminders = reminders.filter(r => !r.completed && r.date === "Today");
+    
+    if (currentReminders.length > 0) {
+      const reminder = currentReminders[0];
+      voiceService.speak(`It's time to ${reminder.title} at ${reminder.time}`);
+      toast.success("Playing test voice reminder");
+    } else {
+      voiceService.speak("You don't have any reminders scheduled for today.");
+      toast.success("Playing test voice reminder");
+    }
+  };
+
   const toggleNotificationMethod = (method: NotificationMethod) => {
-    setNotificationPreferences(prev => 
-      prev.includes(method)
-        ? prev.filter(m => m !== method)
-        : [...prev, method]
-    );
+    setNotificationPreferences(prev => {
+      if (prev.includes(method)) {
+        if (method === 'voice') {
+          const voiceService = VoiceReminderService.getInstance();
+          voiceService.toggleEnabled();
+          setVoiceEnabled(false);
+        }
+        return prev.filter(m => m !== method);
+      } else {
+        if (method === 'voice') {
+          const voiceService = VoiceReminderService.getInstance();
+          if (!voiceService.isEnabled()) {
+            voiceService.toggleEnabled();
+            setVoiceEnabled(true);
+          }
+        }
+        return [...prev, method];
+      }
+    });
   };
 
   const getIconForType = (type: string) => {
@@ -124,8 +181,6 @@ const Reminders = () => {
   };
 
   const handleReminderAdded = () => {
-    // In a real app, we would refetch the reminders
-    // For now, we'll just add a mock reminder
     const newReminder: Reminder = {
       id: reminders.length + 1,
       title: "New Reminder",
@@ -324,9 +379,25 @@ const Reminders = () => {
               <h2 className="text-xl font-semibold text-gray-900">Set Up Voice Reminders</h2>
               <p className="text-gray-600 mt-1">Get friendly audio reminders for your medications</p>
             </div>
-            <Button variant="outline" className="border-amber-200 bg-white">
-              Enable Voice Reminders
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant={voiceEnabled ? "default" : "outline"} 
+                className={voiceEnabled ? "bg-amber-500 hover:bg-amber-600" : "border-amber-200 bg-white"}
+                onClick={toggleVoiceReminders}
+              >
+                {voiceEnabled ? "Disable Voice Reminders" : "Enable Voice Reminders"}
+              </Button>
+              {voiceEnabled && (
+                <Button 
+                  variant="outline" 
+                  className="border-amber-200 bg-white"
+                  onClick={testVoiceReminder}
+                >
+                  <Volume2 className="h-4 w-4 mr-2" />
+                  Test
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
