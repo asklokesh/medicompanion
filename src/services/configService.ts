@@ -20,8 +20,8 @@ export type AppConfig = {
 export const defaultAppConfig: AppConfig = {
   features: {
     medication_reminder: true,
-    health_tracking: true,
-    brain_games: true,
+    health_tracking: false,  // Changed from true to false
+    brain_games: false,      // Changed from true to false
     emergency_features: false,
     family_connection: false,
   },

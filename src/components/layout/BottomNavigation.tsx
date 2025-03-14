@@ -1,6 +1,5 @@
-
 import { Link, useLocation } from "react-router-dom";
-import { HeartPulse, Pill, Brain, Bell, Activity } from "lucide-react";
+import { HeartPulse, Pill, Bell, Brain, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useEffect, useState } from "react";

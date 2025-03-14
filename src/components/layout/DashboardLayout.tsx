@@ -1,9 +1,8 @@
-
 import { useAuth } from "@/lib/auth/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Bell, Pill, Calendar, Camera, 
-  LogOut, Menu, X, HeartPulse, User, Activity, Brain, BellRing
+  LogOut, Menu, X, HeartPulse, User, BellRing
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -69,16 +68,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       name: "Reminders",
       path: "/reminders",
       icon: <Bell className="h-6 w-6" />,
-    },
-    {
-      name: "Health Tracking",
-      path: "/health-tracking",
-      icon: <Activity className="h-6 w-6" />,
-    },
-    {
-      name: "Brain Games",
-      path: "/brain-games",
-      icon: <Brain className="h-6 w-6" />,
     },
     {
       name: "Identify Pill",
