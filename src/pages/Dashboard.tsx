@@ -12,11 +12,8 @@ import {
   Sheet, 
   SheetContent, 
   SheetHeader, 
-  SheetTitle, 
-  SheetTrigger 
+  SheetTitle
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Bell } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -94,67 +91,12 @@ const Dashboard = () => {
     setNotificationsOpen(false);
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
   if (loading) {
     return <DashboardLoading />;
   }
 
   return (
     <DashboardLayout>
-      <div className="flex justify-end mb-4">
-        <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="relative"
-              onClick={() => setNotificationsOpen(true)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-md">
-            <SheetHeader className="flex flex-row items-center justify-between">
-              <SheetTitle>Notifications</SheetTitle>
-              <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-                Mark all as read
-              </Button>
-            </SheetHeader>
-            <div className="mt-6 space-y-2">
-              {notifications.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No notifications
-                </div>
-              ) : (
-                notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      notification.read ? "bg-gray-50" : "bg-amber-50"
-                    } hover:bg-amber-100`}
-                    onClick={() => handleNotificationClick(notification)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h3 className={`text-sm font-medium ${!notification.read ? "text-amber-800" : "text-gray-800"}`}>
-                        {notification.title}
-                      </h3>
-                      <span className="text-xs text-gray-500">{notification.time}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
-
       <div className="space-y-6">
         <UserProfileCard 
           userProfile={userProfile} 
@@ -174,6 +116,43 @@ const Dashboard = () => {
 
         <QuickAccessGrid />
       </div>
+
+      {/* Notification Sheet - Kept but not shown directly on dashboard */}
+      <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <SheetContent className="w-full sm:max-w-md">
+          <SheetHeader className="flex flex-row items-center justify-between">
+            <SheetTitle>Notifications</SheetTitle>
+            <button className="text-sm text-primary hover:underline" onClick={markAllAsRead}>
+              Mark all as read
+            </button>
+          </SheetHeader>
+          <div className="mt-6 space-y-2">
+            {notifications.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                    notification.read ? "bg-gray-50" : "bg-amber-50"
+                  } hover:bg-amber-100`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className={`text-sm font-medium ${!notification.read ? "text-amber-800" : "text-gray-800"}`}>
+                      {notification.title}
+                    </h3>
+                    <span className="text-xs text-gray-500">{notification.time}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   );
 };
