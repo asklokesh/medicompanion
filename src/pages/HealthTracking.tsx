@@ -1,14 +1,14 @@
-import { DashboardLayout } from "../components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Activity, Heart, TrendingUp, Thermometer, Plus, Droplets, LineChart, Clock, Weight, Watch, Smartphone } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useEffect, useState } from "react";
-import { getHealthTrendsData, getLatestHealthMetrics, HealthData, HealthMetric } from "../healthTrackingService";
+import { getHealthTrendsData, getLatestHealthMetrics, HealthData, HealthMetric } from "@/healthTrackingService";
 import { toast } from "sonner";
-import { useAuth } from "../lib/auth/AuthContext";
-import { RecordHealthMetricModal } from "../components/health/RecordHealthMetricModal";
-import { DeviceIntegrationModal } from "../components/health/DeviceIntegrationModal";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { RecordHealthMetricModal } from "@/components/health/RecordHealthMetricModal";
+import { DeviceIntegrationModal } from "@/components/health/DeviceIntegrationModal";
 
 const HealthTracking = () => {
   const { user } = useAuth();
