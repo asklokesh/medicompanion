@@ -1,13 +1,13 @@
-
 import { useState, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Loader2, Camera, Search, PlusCircle, Info, FileText, Check, AlertTriangle, HelpCircle } from "lucide-react";
+import { Loader2, Camera, Search, PlusCircle, Info, FileText, Check, AlertTriangle, HelpCircle, ExternalLink } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { searchPillsByText, identifyPillFromImage, type PillMatch } from "@/services/pillIdentificationService";
+import { Link } from "react-router-dom";
 
 const IdentifyPill = () => {
   const [isScanning, setIsScanning] = useState(false);
@@ -21,7 +21,6 @@ const IdentifyPill = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
-  // Theme colors - using warm color palette (yellows, browns, oranges, reds)
   const theme = {
     primary: 'from-amber-500 to-orange-600',
     accent: 'from-orange-500 to-red-600',
@@ -47,11 +46,9 @@ const IdentifyPill = () => {
     setMatchingPills([]);
     
     try {
-      // Process the image and get possible matches
       const results = await identifyPillFromImage(imageFile);
       setMatchingPills(results);
       
-      // Add to recent searches
       if (results.length > 0) {
         const newSearch = {
           id: Date.now(),
@@ -96,12 +93,10 @@ const IdentifyPill = () => {
     
     try {
       console.log("Searching for:", searchQuery);
-      // Search for pills based on text query
       const results = await searchPillsByText(searchQuery);
       console.log("Search results:", results);
       setMatchingPills(results);
       
-      // Add to recent searches
       if (results.length > 0) {
         const newSearch = {
           id: Date.now(),
@@ -147,7 +142,6 @@ const IdentifyPill = () => {
       title: "Pill Selected",
       description: `You've identified this pill as ${pill.name}.`,
     });
-    // In a real app, this would save the selection to the user's medications or show more details
   };
 
   const handleSearchFromHistory = (search: any) => {
@@ -157,17 +151,23 @@ const IdentifyPill = () => {
     });
   };
 
+  const handleOpenExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    toast({
+      title: "Opening Resource",
+      description: "Opening external resource in a new tab.",
+    });
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header section */}
         <div className={`-mx-6 -mt-6 px-6 pt-6 pb-10 bg-gradient-to-r ${theme.primary} text-white rounded-b-3xl`}>
           <h1 className="text-3xl font-bold mb-2">Identify Pills</h1>
           <p className="text-white text-opacity-90">
             Take a photo or enter details to identify your medications
           </p>
           
-          {/* Search / Scan Section */}
           <div className="mt-6 flex flex-col space-y-3">
             <form onSubmit={handleSearch} className="relative">
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -215,9 +215,7 @@ const IdentifyPill = () => {
           </div>
         </div>
         
-        {/* Main content */}
         <div className="space-y-6">
-          {/* Possible matches section */}
           <Card className="border-0 rounded-3xl shadow-md overflow-hidden">
             <div className={`bg-gradient-to-r ${theme.accent} px-5 py-3`}>
               <h2 className="text-xl font-bold text-white flex items-center">
@@ -294,7 +292,6 @@ const IdentifyPill = () => {
             </CardContent>
           </Card>
           
-          {/* Recent searches */}
           <Card className="border-0 rounded-3xl shadow-md overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg font-bold">Recent Searches</h2>
@@ -337,7 +334,6 @@ const IdentifyPill = () => {
             </CardContent>
           </Card>
           
-          {/* Safety notice */}
           <Card className="border-0 rounded-3xl shadow-md overflow-hidden">
             <CardContent className="p-4">
               <div className="flex">
@@ -359,27 +355,49 @@ const IdentifyPill = () => {
             </CardContent>
           </Card>
           
-          {/* Resources */}
           <Card className="border-0 rounded-3xl shadow-md overflow-hidden">
             <div className="px-5 py-3 border-b border-gray-100">
               <h2 className="text-lg font-bold">Helpful Resources</h2>
             </div>
             <CardContent className="p-4">
               <div className="space-y-3">
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-left h-auto py-3 px-4"
+                  onClick={() => handleOpenExternalLink("https://www.fda.gov/drugs/medication-safety-basics/where-and-how-dispose-unused-medicines")}
+                >
                   <FileText className="h-5 w-5 mr-3 text-amber-600" />
                   <div>
                     <h3 className="font-medium">Medication Safety Guide</h3>
                     <p className="text-xs text-gray-500">Tips for safely managing your medications</p>
                   </div>
+                  <ExternalLink className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
                 
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4">
-                  <HelpCircle className="h-5 w-5 mr-3 text-orange-600" />
+                <Link to="/help" className="block">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-left h-auto py-3 px-4"
+                  >
+                    <HelpCircle className="h-5 w-5 mr-3 text-orange-600" />
+                    <div>
+                      <h3 className="font-medium">Need Help?</h3>
+                      <p className="text-xs text-gray-500">Get help with identifying your medications</p>
+                    </div>
+                  </Button>
+                </Link>
+
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-left h-auto py-3 px-4"
+                  onClick={() => handleOpenExternalLink("https://www.pillidentifier.com/")}
+                >
+                  <Search className="h-5 w-5 mr-3 text-blue-600" />
                   <div>
-                    <h3 className="font-medium">Contact Pharmacy</h3>
-                    <p className="text-xs text-gray-500">Ask your pharmacist about your medications</p>
+                    <h3 className="font-medium">Pill Identifier Database</h3>
+                    <p className="text-xs text-gray-500">Comprehensive database of medication appearances</p>
                   </div>
+                  <ExternalLink className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
               </div>
             </CardContent>
