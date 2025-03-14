@@ -42,6 +42,63 @@ export const useDashboardData = () => {
     currentHour >= 12 && currentHour < 17 ? 'afternoon' :
     currentHour >= 17 && currentHour < 21 ? 'evening' : 'night';
 
+  // Define calculateStreak function at the component level so it can be accessed from anywhere in the hook
+  const calculateStreak = (logs: MedicationLog[]) => {
+    if (!logs.length) {
+      setStreak(0);
+      return;
+    }
+
+    // Get all medications to check if user has any
+    if (medications.length === 0) {
+      setStreak(0);
+      return;
+    }
+
+    // Group logs by date (using date string as key)
+    const logsByDate = logs.reduce((acc: Record<string, MedicationLog[]>, log) => {
+      const dateStr = format(new Date(log.taken_at), 'yyyy-MM-dd');
+      if (!acc[dateStr]) {
+        acc[dateStr] = [];
+      }
+      acc[dateStr].push(log);
+      return acc;
+    }, {});
+
+    // Check if each medication was taken each day
+    let currentStreak = 0;
+    const today = new Date();
+    
+    // Start checking from yesterday, since today might not be complete yet
+    let checkDate = subDays(today, 1);
+    
+    // Continue checking backwards until we find a day with missed medications
+    while (true) {
+      const dateStr = format(checkDate, 'yyyy-MM-dd');
+      const dayLogs = logsByDate[dateStr] || [];
+      
+      // If there were medications to take and some logs for that day
+      if (dayLogs.length > 0) {
+        currentStreak++;
+        checkDate = subDays(checkDate, 1);
+      } else {
+        // Check if this day is today, in which case the streak doesn't break
+        if (isSameDay(checkDate, today)) {
+          checkDate = subDays(checkDate, 1);
+          continue;
+        }
+        
+        // No logs for this day, streak is broken
+        break;
+      }
+      
+      // Don't go back more than 365 days
+      if (currentStreak >= 365) break;
+    }
+    
+    setStreak(currentStreak);
+  };
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user) {
@@ -100,62 +157,6 @@ export const useDashboardData = () => {
           calculateStreak(typedLogs);
         }
       }
-    };
-
-    const calculateStreak = (logs: MedicationLog[]) => {
-      if (!logs.length) {
-        setStreak(0);
-        return;
-      }
-
-      // Get all medications to check if user has any
-      if (medications.length === 0) {
-        setStreak(0);
-        return;
-      }
-
-      // Group logs by date (using date string as key)
-      const logsByDate = logs.reduce((acc: Record<string, MedicationLog[]>, log) => {
-        const dateStr = format(new Date(log.taken_at), 'yyyy-MM-dd');
-        if (!acc[dateStr]) {
-          acc[dateStr] = [];
-        }
-        acc[dateStr].push(log);
-        return acc;
-      }, {});
-
-      // Check if each medication was taken each day
-      let currentStreak = 0;
-      const today = new Date();
-      
-      // Start checking from yesterday, since today might not be complete yet
-      let checkDate = subDays(today, 1);
-      
-      // Continue checking backwards until we find a day with missed medications
-      while (true) {
-        const dateStr = format(checkDate, 'yyyy-MM-dd');
-        const dayLogs = logsByDate[dateStr] || [];
-        
-        // If there were medications to take and some logs for that day
-        if (dayLogs.length > 0) {
-          currentStreak++;
-          checkDate = subDays(checkDate, 1);
-        } else {
-          // Check if this day is today, in which case the streak doesn't break
-          if (isSameDay(checkDate, today)) {
-            checkDate = subDays(checkDate, 1);
-            continue;
-          }
-          
-          // No logs for this day, streak is broken
-          break;
-        }
-        
-        // Don't go back more than 365 days
-        if (currentStreak >= 365) break;
-      }
-      
-      setStreak(currentStreak);
     };
 
     Promise.all([
