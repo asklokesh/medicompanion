@@ -173,7 +173,7 @@ const IdentifyPill = () => {
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Describe pill color, shape, or markings..."
-                className="pl-10 bg-white border-0 h-12 shadow-md rounded-xl"
+                className="pl-10 bg-white text-gray-800 border-0 h-12 shadow-md rounded-xl"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
