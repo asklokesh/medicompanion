@@ -5,87 +5,89 @@
 
 @layer base {
   :root {
-    --background: 30 25% 98%;
-    --foreground: 20 15% 15%;
+    /* Light mode colors */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 20 15% 15%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 15% 15%;
+    --popover-foreground: 222 47% 11%;
     
-    /* Refined orange primary */
-    --primary: 30 85% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-50: 30 100% 97%;
-    --primary-100: 30 100% 94%;
-    --primary-200: 30 90% 88%;
-    --primary-300: 30 90% 80%;
-    --primary-400: 30 90% 65%;
-    --primary-500: 30 85% 55%;
-    --primary-600: 30 70% 50%;
-    --primary-700: 30 75% 40%;
-    --primary-800: 30 70% 30%;
-    --primary-900: 30 70% 20%;
+    /* Warm primary colors */
+    --primary: 24 94% 50%;
+    --primary-foreground: 210 40% 98%;
+    --primary-50: 24 100% 97%;
+    --primary-100: 24 100% 93%;
+    --primary-200: 24 95% 86%;
+    --primary-300: 24 95% 76%;
+    --primary-400: 24 95% 65%;
+    --primary-500: 24 94% 50%;
+    --primary-600: 24 90% 45%;
+    --primary-700: 24 85% 40%;
+    --primary-800: 24 80% 35%;
+    --primary-900: 24 75% 30%;
     
-    /* Warmer secondary */
-    --secondary: 35 80% 90%;
-    --secondary-foreground: 25 47.4% 22%;
+    /* Secondary colors */
+    --secondary: 30 60% 95%;
+    --secondary-foreground: 24 40% 25%;
     
-    --muted: 35 40% 96.1%;
-    --muted-foreground: 24 16.3% 46.9%;
+    --muted: 30 20% 96%;
+    --muted-foreground: 222 20% 45%;
     
-    /* Accent is now a complementary blue */
-    --accent: 210 80% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* Complementary blue */
+    --accent: 210 100% 65%;
+    --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
     
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 30 85% 55%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 24 94% 50%;
     
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 20 15% 10%;
-    --foreground: 30 25% 98%;
-    --card: 20 15% 15%;
-    --card-foreground: 30 25% 98%;
-    --popover: 20 15% 15%;
-    --popover-foreground: 30 25% 98%;
+    /* Dark mode colors */
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 15%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 47% 15%;
+    --popover-foreground: 213 31% 91%;
     
-    /* Slightly brighter primary in dark mode */
-    --primary: 30 90% 60%;
-    --primary-foreground: 20 15% 10%;
-    --primary-50: 30 40% 15%;
-    --primary-100: 30 40% 20%;
-    --primary-200: 30 40% 25%;
-    --primary-300: 30 40% 35%;
-    --primary-400: 30 70% 45%;
-    --primary-500: 30 90% 60%;
-    --primary-600: 30 100% 65%;
-    --primary-700: 30 100% 70%;
-    --primary-800: 30 100% 80%;
-    --primary-900: 30 100% 90%;
+    /* Brighter primary in dark mode */
+    --primary: 24 94% 50%;
+    --primary-foreground: 222 47% 11%;
+    --primary-50: 24 30% 20%;
+    --primary-100: 24 30% 25%;
+    --primary-200: 24 30% 30%;
+    --primary-300: 24 40% 35%;
+    --primary-400: 24 50% 40%;
+    --primary-500: 24 70% 50%;
+    --primary-600: 24 85% 55%;
+    --primary-700: 24 90% 60%;
+    --primary-800: 24 95% 65%;
+    --primary-900: 24 100% 70%;
     
     /* Darker secondary in dark mode */
-    --secondary: 35 30% 25%;
-    --secondary-foreground: 30 25% 98%;
+    --secondary: 30 25% 25%;
+    --secondary-foreground: 213 31% 91%;
     
-    --muted: 35 20% 25%;
-    --muted-foreground: 30 20% 75%;
+    --muted: 30 25% 20%;
+    --muted-foreground: 213 20% 75%;
     
-    /* Slightly muted accent in dark mode */
-    --accent: 210 80% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Slightly brighter accent in dark mode */
+    --accent: 210 100% 65%;
+    --accent-foreground: 213 31% 91%;
     
-    --destructive: 0 75% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 210 40% 98%;
     
-    --border: 20 15% 25%;
-    --input: 20 15% 25%;
-    --ring: 30 85% 60%;
+    --border: 222 47% 25%;
+    --input: 222 47% 25%;
+    --ring: 24 94% 50%;
   }
 }
 
@@ -245,17 +247,15 @@
   }
   
   .card-gradient {
-    background: linear-gradient(120deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    @apply bg-gradient-to-br from-card/80 to-card border border-border;
   }
   
   .pill-shadow {
-    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(var(--primary), 0.2);
   }
   
   .text-gradient {
-    background: linear-gradient(90deg, #3B82F6 0%, #4ADE80 100%);
+    background: linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -304,12 +304,12 @@
 
 /* Emotional design elements */
 .caring-shadow {
-  box-shadow: 0 20px 30px -10px rgba(66, 153, 225, 0.2);
+  box-shadow: 0 20px 30px -10px rgba(var(--primary), 0.2);
   transition: box-shadow 0.3s ease-in-out;
 }
 
 .caring-shadow:hover {
-  box-shadow: 0 25px 50px -12px rgba(66, 153, 225, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(var(--primary), 0.3);
 }
 
 .heartbeat-on-hover:hover .heart-icon {
@@ -317,13 +317,13 @@
 }
 
 .health-gradient {
-  background: linear-gradient(135deg, #fffbeb, #fef3c7, #fed7aa, #ffedd5);
+  background: linear-gradient(135deg, hsl(var(--primary-50)), hsl(var(--primary-100)), hsl(var(--primary-200)), hsl(var(--primary-300)));
   background-size: 400% 400%;
   animation: gradient 10s ease infinite;
 }
 
 .dark .health-gradient {
-  background: linear-gradient(135deg, #433b20, #463d1f, #453420, #46341e);
+  background: linear-gradient(135deg, hsl(var(--primary-900)), hsl(var(--primary-800)), hsl(var(--primary-700)), hsl(var(--primary-600)));
   background-size: 400% 400%;
   animation: gradient 10s ease infinite;
 }

@@ -2,35 +2,75 @@
 import { useState, useEffect } from "react";
 
 export function useTheme() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("system");
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    // Check if user has a theme preference in localStorage
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme) {
-      setTheme(storedTheme);
-      applyTheme(storedTheme);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      // Use dark theme if user has dark mode preference
-      setTheme("dark");
-      applyTheme("dark");
-    }
-  }, []);
-
-  const setThemeValue = (newTheme: string) => {
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
+  // Check if user prefers dark mode
+  const prefersDarkMode = () => {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   };
 
+  // Determine active theme (resolving "system" to actual theme)
+  const resolveTheme = (theme: string) => {
+    if (theme === "system") {
+      return prefersDarkMode() ? "dark" : "light";
+    }
+    return theme;
+  };
+
+  // Apply theme to document
   const applyTheme = (newTheme: string) => {
-    // Apply theme to document
-    if (newTheme === "dark" || (newTheme === "system" && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const resolvedTheme = resolveTheme(newTheme);
+    
+    // Apply or remove dark class
+    if (resolvedTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // Update meta theme-color for browser UI
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute(
+        "content", 
+        resolvedTheme === "dark" ? "#1a1f2c" : "#f8fafc"
+      );
+    }
   };
 
-  return { theme, setTheme: setThemeValue };
+  useEffect(() => {
+    setMounted(true);
+    
+    // Check for stored theme or use system preference
+    const storedTheme = localStorage.getItem("theme") || "system";
+    setTheme(storedTheme);
+    applyTheme(storedTheme);
+
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      if (theme === "system") {
+        applyTheme("system");
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // This effect runs when theme state changes
+  useEffect(() => {
+    if (!mounted) return;
+    
+    localStorage.setItem("theme", theme);
+    applyTheme(theme);
+  }, [theme, mounted]);
+
+  return { 
+    theme, 
+    setTheme,
+    resolvedTheme: mounted ? resolveTheme(theme) : undefined,
+    systemTheme: mounted ? (prefersDarkMode() ? "dark" : "light") : undefined
+  };
 }

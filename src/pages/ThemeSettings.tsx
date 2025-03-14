@@ -8,22 +8,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Palette, Check, Moon, Sun, Monitor } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/hooks/next-themes";
 
 const ThemeSettings = () => {
   const { user } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const [primaryColor, setPrimaryColor] = useState("blue");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [primaryColor, setPrimaryColor] = useState("orange");
   const [fontSize, setFontSize] = useState("medium");
   const [highContrast, setHighContrast] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Mock data for theme preferences (in a real app, this would be stored in a database)
+  // Color options with proper HSL values that match our CSS variables
   const colorOptions = [
-    { id: "blue", label: "Blue", value: "214 100% 67%" },
-    { id: "green", label: "Green", value: "142 76% 36%" },
+    { id: "blue", label: "Blue", value: "210 100% 65%" },
+    { id: "green", label: "Green", value: "142 76% 45%" },
     { id: "purple", label: "Purple", value: "262 80% 59%" },
     { id: "orange", label: "Orange", value: "24 94% 50%" },
     { id: "red", label: "Red", value: "0 84% 60%" }
@@ -38,7 +37,7 @@ const ThemeSettings = () => {
 
   useEffect(() => {
     // Load saved preferences
-    const savedColor = localStorage.getItem("primaryColor") || "blue";
+    const savedColor = localStorage.getItem("primaryColor") || "orange";
     const savedFontSize = localStorage.getItem("fontSize") || "medium";
     const savedContrast = localStorage.getItem("highContrast") === "true";
     
@@ -47,12 +46,12 @@ const ThemeSettings = () => {
     setHighContrast(savedContrast);
     
     // Apply the saved preferences
-    applyTheme(theme, savedColor, savedFontSize, savedContrast);
-  }, [theme]);
+    applyTheme(savedColor, savedFontSize, savedContrast);
+  }, [resolvedTheme]);
 
-  const applyTheme = (newTheme: string, newColor: string, newFontSize: string, newContrast: boolean) => {
+  const applyTheme = (newColor: string, newFontSize: string, newContrast: boolean) => {
     const root = document.documentElement;
-    const selectedColor = colorOptions.find(color => color.id === newColor)?.value || colorOptions[0].value;
+    const selectedColor = colorOptions.find(color => color.id === newColor)?.value || colorOptions[3].value;
     
     // Apply primary color
     root.style.setProperty("--primary", selectedColor);
@@ -78,10 +77,24 @@ const ThemeSettings = () => {
     // Apply high contrast if needed
     if (newContrast) {
       root.classList.add("high-contrast");
-      root.style.setProperty("--primary-foreground", "0 0% 100%");
+      // Increase contrast for accessibility
+      if (resolvedTheme === "dark") {
+        root.style.setProperty("--foreground", "0 0% 100%");
+        root.style.setProperty("--background", "240 10% 3.9%");
+      } else {
+        root.style.setProperty("--foreground", "240 10% 3.9%");
+        root.style.setProperty("--background", "0 0% 100%");
+      }
     } else {
       root.classList.remove("high-contrast");
-      root.style.setProperty("--primary-foreground", "210 40% 98%");
+      // Reset to default contrast
+      if (resolvedTheme === "dark") {
+        root.style.setProperty("--foreground", "213 31% 91%");
+        root.style.setProperty("--background", "222 47% 11%");
+      } else {
+        root.style.setProperty("--foreground", "222 47% 11%");
+        root.style.setProperty("--background", "210 40% 98%");
+      }
     }
   };
 
@@ -94,7 +107,7 @@ const ThemeSettings = () => {
     localStorage.setItem("highContrast", highContrast.toString());
     
     // Apply the theme
-    applyTheme(theme, primaryColor, fontSize, highContrast);
+    applyTheme(primaryColor, fontSize, highContrast);
     
     // Simulate saving to database
     setTimeout(() => {
@@ -104,8 +117,8 @@ const ThemeSettings = () => {
   };
 
   const resetToDefaults = () => {
-    const defaultTheme = "light";
-    const defaultColor = "blue";
+    const defaultTheme = "system";
+    const defaultColor = "orange";
     const defaultFontSize = "medium";
     const defaultContrast = false;
     
@@ -114,7 +127,7 @@ const ThemeSettings = () => {
     setFontSize(defaultFontSize);
     setHighContrast(defaultContrast);
     
-    applyTheme(defaultTheme, defaultColor, defaultFontSize, defaultContrast);
+    applyTheme(defaultColor, defaultFontSize, defaultContrast);
     
     localStorage.setItem("theme", defaultTheme);
     localStorage.setItem("primaryColor", defaultColor);
