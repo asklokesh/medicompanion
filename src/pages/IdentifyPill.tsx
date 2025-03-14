@@ -374,19 +374,6 @@ const IdentifyPill = () => {
                   <ExternalLink className="h-4 w-4 ml-auto text-gray-400" />
                 </Button>
                 
-                <Link to="/help" className="block">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start text-left h-auto py-3 px-4"
-                  >
-                    <HelpCircle className="h-5 w-5 mr-3 text-orange-600" />
-                    <div>
-                      <h3 className="font-medium">Need Help?</h3>
-                      <p className="text-xs text-gray-500">Get help with identifying your medications</p>
-                    </div>
-                  </Button>
-                </Link>
-
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-left h-auto py-3 px-4"
