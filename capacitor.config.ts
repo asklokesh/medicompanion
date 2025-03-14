@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Comment out this section to use bundled assets instead of loading from URL
-    url: 'https://0d0827cd-5ea0-4fb7-bc8d-056d1dcfcf69.lovableproject.com?forceHideBadge=true',
+    // url: 'https://0d0827cd-5ea0-4fb7-bc8d-056d1dcfcf69.lovableproject.com?forceHideBadge=true',
     cleartext: true
   },
   ios: {
