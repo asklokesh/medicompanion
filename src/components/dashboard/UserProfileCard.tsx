@@ -58,10 +58,10 @@ export function UserProfileCard({ userProfile, user, streak }: UserProfileCardPr
   const randomDearOne = getRandomDearOnePhoto();
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-200 flex-shrink-0 border-2 border-primary overflow-hidden">
+          <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full flex-shrink-0 overflow-hidden shadow-lg">
             {userProfile?.avatar_url ? (
               <img 
                 src={userProfile.avatar_url} 
@@ -69,35 +69,38 @@ export function UserProfileCard({ userProfile, user, streak }: UserProfileCardPr
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-primary text-2xl font-bold">
+              <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-primary-400 to-primary-600">
                 {userProfile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
               </div>
             )}
+            <div className="absolute inset-0 rounded-full ring-2 ring-white/50"></div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Hello, {userProfile?.full_name?.split(' ')[0] || 'User'}
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg text-gray-600 mt-1">
               {format(new Date(), 'EEEE, MMMM d')}
             </p>
           </div>
         </div>
 
-        <div className="mt-6 bg-primary/90 text-white rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
+        <div className="mt-6 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl shadow-md overflow-hidden">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <span className="text-2xl">🔥</span>
+              </div>
               <div>
                 <h3 className="text-xl font-bold">{streak} day streak</h3>
               </div>
             </div>
             <div className="flex items-center">
-              <p className="text-white/90 mr-2">{getDearOnesMessage()}</p>
+              <p className="text-white/90 mr-2 font-medium">{getDearOnesMessage()}</p>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 text-white hover:text-white/80 hover:bg-primary/80"
+                className="h-8 w-8 text-white hover:text-white/80 hover:bg-white/10 rounded-full"
                 onClick={handleEditDearOnes}
               >
                 {dearOnes.length === 0 ? <PlusCircle size={18} /> : <Edit size={18} />}
@@ -106,14 +109,18 @@ export function UserProfileCard({ userProfile, user, streak }: UserProfileCardPr
           </div>
           
           {randomDearOne && (
-            <div className="mt-3 flex items-center gap-3 p-2 bg-primary/20 rounded-lg">
-              <Avatar className="h-10 w-10 border-2 border-white">
-                <AvatarImage src={randomDearOne.image_url} alt={randomDearOne.name} />
-                <AvatarFallback>{randomDearOne.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm text-white/90">
-                Remember to stay healthy for {randomDearOne.name} today!
-              </p>
+            <div className="p-4 bg-gradient-to-br from-white/10 to-white/5 border-t border-white/10">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 border-2 border-white/30 shadow-lg">
+                  <AvatarImage src={randomDearOne.image_url} alt={randomDearOne.name} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary-300 to-primary-400 text-white">
+                    {randomDearOne.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <p className="text-base text-white/95 font-medium">
+                  Remember to stay healthy for {randomDearOne.name} today!
+                </p>
+              </div>
             </div>
           )}
         </div>

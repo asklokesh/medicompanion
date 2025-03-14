@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { HeartPulse, Pill, Bell, Brain, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -72,28 +73,37 @@ export function BottomNavigation() {
   const displayedItems = filteredNavItems.slice(0, 5);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 z-50 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 md:hidden shadow-lg">
       <div className="flex items-center justify-around">
-        {displayedItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={cn(
-              "flex flex-col items-center py-3 px-3",
-              location.pathname === item.path 
-                ? "text-primary" 
-                : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <div className={cn(
-              "p-2 rounded-full mb-1",
-              location.pathname === item.path ? "bg-primary/10" : ""
-            )}>
-              {item.icon}
-            </div>
-            <span className="text-xs font-medium">{item.name}</span>
-          </Link>
-        ))}
+        {displayedItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "flex flex-col items-center py-2 px-3 transition-colors",
+                isActive ? "text-primary-600" : "text-slate-500"
+              )}
+            >
+              <div className={cn(
+                "p-2 rounded-full mb-1 transition-all",
+                isActive 
+                  ? "bg-primary-100 scale-110" 
+                  : "hover:bg-slate-100 hover:scale-110"
+              )}>
+                {item.icon}
+              </div>
+              <span className={cn(
+                "text-xs font-medium",
+                isActive && "font-semibold"
+              )}>
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
