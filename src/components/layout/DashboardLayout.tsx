@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { 
   Bell, Pill, Calendar, Camera, 
-  LogOut, Menu, X, HeartPulse, User, Activity, Brain
+  LogOut, Menu, X, HeartPulse, User, Activity, Brain, BellRing
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -121,7 +121,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Removed the Bell icon from here to avoid duplication */}
+          <div className="relative">
+            <BellRing 
+              className="h-6 w-6 cursor-pointer hover:scale-110 transition-transform text-white" 
+              onClick={() => navigate('/reminders')}
+            />
+            {unreadNotifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
+                {unreadNotifications}
+              </span>
+            )}
+          </div>
           <Button 
             variant="ghost" 
             size="icon" 
