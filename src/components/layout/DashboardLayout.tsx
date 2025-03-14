@@ -121,14 +121,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
         
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <Bell className="h-6 w-6 cursor-pointer hover:scale-110 transition-transform" />
-            {unreadNotifications > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                {unreadNotifications}
-              </span>
-            )}
-          </div>
+          {/* Removed the Bell icon from here to avoid duplication */}
           <Button 
             variant="ghost" 
             size="icon" 
