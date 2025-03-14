@@ -151,7 +151,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
             
             <Link
-              to="/settings"
+              to="/theme-settings"
               className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
             >
               <Settings className="w-5 h-5 text-gray-600" />
