@@ -47,8 +47,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   ]);
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+    const updatedNotifications = notifications.map(notification => ({ 
+      ...notification, 
+      read: true 
+    }));
+    
+    setNotifications(updatedNotifications);
     toast.success("All notifications marked as read");
+    
+    // Update the unread count immediately
+    setUnreadCount(0);
   };
 
   const handleNotificationClick = (notification: any) => {
@@ -90,7 +98,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [scrolled]);
 
   // Calculate unread notification count
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  useEffect(() => {
+    const count = notifications.filter(n => !n.read).length;
+    setUnreadCount(count);
+  }, [notifications]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
