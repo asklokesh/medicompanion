@@ -70,6 +70,62 @@ npm run dev
 
 Visit `http://localhost:5173` to see the application running locally.
 
+## Mobile Development (iOS & Android)
+
+### Prerequisites
+- For iOS: macOS with Xcode 14+ installed
+- For Android: Android Studio with SDK tools installed
+- Capacitor CLI: `npm install -g @capacitor/cli`
+
+### Building and Testing for iOS
+
+```sh
+# Build the web app
+npm run build
+
+# Sync the build to the iOS project
+npx cap sync ios
+
+# Open the project in Xcode
+npx cap open ios
+
+# Run on simulator
+npx cap run ios
+
+# For a specific device
+npx cap run ios --target="iPhone 14 Pro"
+
+# Build for production
+cd ios/App
+xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos build
+```
+
+### Building and Testing for Android
+
+```sh
+# Build the web app
+npm run build
+
+# Sync the build to the Android project
+npx cap sync android
+
+# Open the project in Android Studio
+npx cap open android
+
+# Run on emulator
+npx cap run android
+
+# For a specific device/emulator
+npx cap run android --target="Pixel_5_API_31"
+
+# Build APK for testing
+cd android
+./gradlew assembleDebug
+
+# Build AAB for Play Store
+./gradlew bundleRelease
+```
+
 ## User Workflows
 
 ### 1. Medication Management
