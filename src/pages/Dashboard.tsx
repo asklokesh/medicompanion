@@ -1,7 +1,6 @@
 
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { useState } from "react";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
 import { CurrentMedicationsCard } from "@/components/dashboard/CurrentMedicationsCard";
@@ -11,7 +10,6 @@ import { DashboardLoading } from "@/components/dashboard/DashboardLoading";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [streak, setStreak] = useState(28);
 
   const {
     userProfile,
@@ -21,7 +19,8 @@ const Dashboard = () => {
     timeOfDay,
     markMedicationsTaken,
     isCurrentMedicationTaken,
-    allCurrentMedicationsTaken
+    allCurrentMedicationsTaken,
+    streak
   } = useDashboardData();
 
   if (loading) {

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { format, subDays, isSameDay } from "date-fns";
 
 interface Medication {
   id: string;
@@ -33,6 +34,7 @@ export const useDashboardData = () => {
   const [currentMedications, setCurrentMedications] = useState<Medication[]>([]);
   const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [streak, setStreak] = useState(0);
 
   const currentHour = new Date().getHours();
   const timeOfDay = 
@@ -75,14 +77,15 @@ export const useDashboardData = () => {
 
     const fetchMedicationLogs = async () => {
       if (user) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Get logs from the last 30 days to calculate streak
+        const thirtyDaysAgo = subDays(new Date(), 30);
         
         const { data, error } = await supabase
           .from('medication_logs')
           .select('*')
           .eq('user_id', user.id)
-          .gte('taken_at', today.toISOString());
+          .gte('taken_at', thirtyDaysAgo.toISOString())
+          .order('taken_at', { ascending: false });
         
         if (data && !error) {
           const typedLogs: MedicationLog[] = data.map(log => ({
@@ -92,14 +95,72 @@ export const useDashboardData = () => {
             taken_at: log.taken_at
           }));
           setMedicationLogs(typedLogs);
+          
+          // Calculate streak after getting logs
+          calculateStreak(typedLogs);
         }
       }
     };
 
+    const calculateStreak = (logs: MedicationLog[]) => {
+      if (!logs.length) {
+        setStreak(0);
+        return;
+      }
+
+      // Get all medications to check if user has any
+      if (medications.length === 0) {
+        setStreak(0);
+        return;
+      }
+
+      // Group logs by date (using date string as key)
+      const logsByDate = logs.reduce((acc: Record<string, MedicationLog[]>, log) => {
+        const dateStr = format(new Date(log.taken_at), 'yyyy-MM-dd');
+        if (!acc[dateStr]) {
+          acc[dateStr] = [];
+        }
+        acc[dateStr].push(log);
+        return acc;
+      }, {});
+
+      // Check if each medication was taken each day
+      let currentStreak = 0;
+      const today = new Date();
+      
+      // Start checking from yesterday, since today might not be complete yet
+      let checkDate = subDays(today, 1);
+      
+      // Continue checking backwards until we find a day with missed medications
+      while (true) {
+        const dateStr = format(checkDate, 'yyyy-MM-dd');
+        const dayLogs = logsByDate[dateStr] || [];
+        
+        // If there were medications to take and some logs for that day
+        if (dayLogs.length > 0) {
+          currentStreak++;
+          checkDate = subDays(checkDate, 1);
+        } else {
+          // Check if this day is today, in which case the streak doesn't break
+          if (isSameDay(checkDate, today)) {
+            checkDate = subDays(checkDate, 1);
+            continue;
+          }
+          
+          // No logs for this day, streak is broken
+          break;
+        }
+        
+        // Don't go back more than 365 days
+        if (currentStreak >= 365) break;
+      }
+      
+      setStreak(currentStreak);
+    };
+
     Promise.all([
       fetchUserProfile(),
-      fetchMedications(),
-      fetchMedicationLogs()
+      fetchMedications().then(fetchMedicationLogs) // Fetch logs after medications
     ]).finally(() => {
       setLoading(false);
     });
@@ -121,14 +182,15 @@ export const useDashboardData = () => {
 
         if (error) throw error;
         
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Fetch updated logs to recalculate streak
+        const thirtyDaysAgo = subDays(new Date(), 30);
         
         const { data: updatedLogs, error: fetchError } = await supabase
           .from('medication_logs')
           .select('*')
           .eq('user_id', user?.id)
-          .gte('taken_at', today.toISOString());
+          .gte('taken_at', thirtyDaysAgo.toISOString())
+          .order('taken_at', { ascending: false });
           
         if (!fetchError && updatedLogs) {
           const typedLogs: MedicationLog[] = updatedLogs.map(log => ({
@@ -138,6 +200,9 @@ export const useDashboardData = () => {
             taken_at: log.taken_at
           }));
           setMedicationLogs(typedLogs);
+          
+          // Recalculate streak after updating logs
+          calculateStreak(typedLogs);
         }
         
         return true;
@@ -169,7 +234,8 @@ export const useDashboardData = () => {
     timeOfDay,
     markMedicationsTaken,
     isCurrentMedicationTaken,
-    allCurrentMedicationsTaken
+    allCurrentMedicationsTaken,
+    streak
   };
 };
 
