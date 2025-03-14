@@ -1,8 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock } from "lucide-react";
 import type { Medication } from "@/hooks/useDashboardData";
 import VoiceReminderService from "@/services/voiceReminderService";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CurrentMedicationsCardProps {
   currentMedications: Medication[];
@@ -21,6 +24,38 @@ export function CurrentMedicationsCard({
 }: CurrentMedicationsCardProps) {
   
   const capitalizedTimeOfDay = timeOfDay.charAt(0).toUpperCase() + timeOfDay.slice(1);
+
+  // Check for time-based greetings when component mounts
+  useEffect(() => {
+    const checkForGreeting = async () => {
+      const voiceService = VoiceReminderService.getInstance();
+      if (voiceService.isEnabled()) {
+        try {
+          // Fetch dear ones from profile
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData?.user) {
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('dear_ones')
+              .eq('id', userData.user.id)
+              .single();
+            
+            if (profile?.dear_ones) {
+              voiceService.speakTimeBasedGreeting(profile.dear_ones as any);
+            } else {
+              voiceService.speakTimeBasedGreeting();
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching profile data for voice greeting:", error);
+          // Still provide greeting without personalization
+          voiceService.speakTimeBasedGreeting();
+        }
+      }
+    };
+    
+    checkForGreeting();
+  }, []);
 
   const handleTakeMedications = async () => {
     await markMedicationsTaken();

@@ -17,6 +17,13 @@ class VoiceReminderService {
     volume: 1,
     voice: null
   };
+  private timeOfDayGreeted: {
+    morning: boolean;
+    evening: boolean;
+  } = {
+    morning: false,
+    evening: false,
+  };
 
   private constructor() {
     this.synth = window.speechSynthesis;
@@ -33,6 +40,30 @@ class VoiceReminderService {
         this.initializeVoice();
       }
     }
+
+    // Reset the time-of-day greeting flags at midnight
+    this.setupDailyReset();
+  }
+
+  private setupDailyReset(): void {
+    const resetGreetings = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      
+      const timeUntilMidnight = midnight.getTime() - now.getTime();
+      
+      setTimeout(() => {
+        this.timeOfDayGreeted = {
+          morning: false,
+          evening: false
+        };
+        // Set up the next day's reset
+        resetGreetings();
+      }, timeUntilMidnight);
+    };
+    
+    resetGreetings();
   }
 
   private initializeVoice(): void {
@@ -128,6 +159,52 @@ class VoiceReminderService {
 
     // Speak the text
     this.synth.speak(utterance);
+  }
+
+  public speakTimeBasedGreeting(dearOnes: { name: string, relation: string }[] = []): void {
+    if (!this.enabled || !this.synth) return;
+    
+    const hour = new Date().getHours();
+    let timeOfDay = '';
+    let shouldSpeak = false;
+    
+    // Determine time of day and whether we should speak
+    if (hour >= 5 && hour < 12) {
+      timeOfDay = 'morning';
+      if (!this.timeOfDayGreeted.morning) {
+        this.timeOfDayGreeted.morning = true;
+        shouldSpeak = true;
+      }
+    } else if (hour >= 18 && hour < 24) {
+      timeOfDay = 'evening';
+      if (!this.timeOfDayGreeted.evening) {
+        this.timeOfDayGreeted.evening = true;
+        shouldSpeak = true;
+      }
+    }
+    
+    if (!shouldSpeak || !timeOfDay) return;
+    
+    // Create personalized message with dear ones if available
+    let message = '';
+    if (dearOnes && dearOnes.length > 0) {
+      const randomIndex = Math.floor(Math.random() * dearOnes.length);
+      const dearOne = dearOnes[randomIndex];
+      
+      if (timeOfDay === 'morning') {
+        message = `Good morning! Taking your medications regularly makes ${dearOne.name} happy and helps you live a long, healthy life together.`;
+      } else {
+        message = `Good evening! Remember, ${dearOne.name} cares about your health. Taking your medications helps you stay well for many more precious moments together.`;
+      }
+    } else {
+      if (timeOfDay === 'morning') {
+        message = "Good morning! Remember that taking your medications helps you stay healthy and enjoy life to its fullest.";
+      } else {
+        message = "Good evening! Taking your medications regularly keeps you healthy for all the wonderful moments life has to offer.";
+      }
+    }
+    
+    this.speak(message);
   }
 
   public stop(): void {

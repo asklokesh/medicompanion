@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DearOne {
   id: string;
@@ -46,6 +46,17 @@ export function UserProfileCard({ userProfile, user, streak }: UserProfileCardPr
     return `For ${allButLast} & ${last}`;
   };
 
+  // Get random dear one photo
+  const getRandomDearOnePhoto = () => {
+    const dearOnesWithPhotos = dearOnes.filter(person => person.image_url);
+    if (dearOnesWithPhotos.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * dearOnesWithPhotos.length);
+    return dearOnesWithPhotos[randomIndex];
+  };
+
+  const randomDearOne = getRandomDearOnePhoto();
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-6">
@@ -73,24 +84,38 @@ export function UserProfileCard({ userProfile, user, streak }: UserProfileCardPr
           </div>
         </div>
 
-        <div className="mt-6 bg-primary/90 text-white rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🔥</span>
-            <div>
-              <h3 className="text-xl font-bold">{streak} day streak</h3>
+        <div className="mt-6 bg-primary/90 text-white rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔥</span>
+              <div>
+                <h3 className="text-xl font-bold">{streak} day streak</h3>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <p className="text-white/90 mr-2">{getDearOnesMessage()}</p>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-white hover:text-white/80 hover:bg-primary/80"
+                onClick={handleEditDearOnes}
+              >
+                {dearOnes.length === 0 ? <PlusCircle size={18} /> : <Edit size={18} />}
+              </Button>
             </div>
           </div>
-          <div className="flex items-center">
-            <p className="text-white/90 mr-2">{getDearOnesMessage()}</p>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 text-white hover:text-white/80 hover:bg-primary/80"
-              onClick={handleEditDearOnes}
-            >
-              {dearOnes.length === 0 ? <PlusCircle size={18} /> : <Edit size={18} />}
-            </Button>
-          </div>
+          
+          {randomDearOne && (
+            <div className="mt-3 flex items-center gap-3 p-2 bg-primary/20 rounded-lg">
+              <Avatar className="h-10 w-10 border-2 border-white">
+                <AvatarImage src={randomDearOne.image_url} alt={randomDearOne.name} />
+                <AvatarFallback>{randomDearOne.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <p className="text-sm text-white/90">
+                Remember to stay healthy for {randomDearOne.name} today!
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

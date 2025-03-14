@@ -12,9 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Upload, Camera } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Json } from "@/integrations/supabase/types";
+import VoiceReminderService from "@/services/voiceReminderService";
 
 interface DearOne {
   id: string;
@@ -41,8 +42,11 @@ const Profile = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const dearOnesRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedDearOne, setSelectedDearOne] = useState<string | null>(null);
   
   const [profile, setProfile] = useState<Profile>({
     id: "",
@@ -55,12 +59,15 @@ const Profile = () => {
     email: true,
     push: true,
     sms: false,
+    voice: false,
   });
 
   // New dear one form state
   const [newDearOne, setNewDearOne] = useState<{
     name: string;
     relation: string;
+    image_file?: File | null;
+    image_preview?: string;
   }>({
     name: "",
     relation: ""
@@ -96,6 +103,13 @@ const Profile = () => {
             updated_at: data.updated_at
           });
         }
+
+        // Check voice reminder settings
+        const voiceService = VoiceReminderService.getInstance();
+        setNotificationSettings(prev => ({
+          ...prev,
+          voice: voiceService.isEnabled()
+        }));
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile");
@@ -146,10 +160,63 @@ const Profile = () => {
     }
   };
 
-  const handleAddDearOne = () => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    // Preview the image
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewDearOne({
+        ...newDearOne,
+        image_file: file,
+        image_preview: reader.result as string
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    try {
+      setIsUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${uuidv4()}.${fileExt}`;
+      const filePath = `dear-ones/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(filePath, file);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(filePath);
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleAddDearOne = async () => {
     if (!newDearOne.name.trim()) {
       toast.error("Please enter a name");
       return;
+    }
+
+    let imageUrl = "";
+    if (newDearOne.image_file) {
+      const uploadedUrl = await uploadImage(newDearOne.image_file);
+      if (uploadedUrl) {
+        imageUrl = uploadedUrl;
+      }
     }
 
     const updatedDearOnes = [
@@ -158,7 +225,7 @@ const Profile = () => {
         id: uuidv4(),
         name: newDearOne.name.trim(),
         relation: newDearOne.relation.trim() || "Family",
-        image_url: ""
+        image_url: imageUrl
       }
     ];
 
@@ -169,10 +236,55 @@ const Profile = () => {
 
     setNewDearOne({
       name: "",
-      relation: ""
+      relation: "",
+      image_file: null,
+      image_preview: undefined
     });
 
     toast.success(`${newDearOne.name} added to your dear ones`);
+    
+    // Save changes immediately
+    await handleSaveProfile();
+  };
+
+  const handleUpdateDearOnePhoto = async (id: string, file: File) => {
+    if (!file || !user) return;
+    
+    try {
+      setIsUploading(true);
+      const uploadedUrl = await uploadImage(file);
+      
+      if (!uploadedUrl) {
+        throw new Error("Failed to upload image");
+      }
+      
+      const updatedDearOnes = (profile.dear_ones || []).map(person => 
+        person.id === id 
+          ? { ...person, image_url: uploadedUrl } 
+          : person
+      );
+      
+      setProfile({
+        ...profile,
+        dear_ones: updatedDearOnes
+      });
+      
+      // Save changes immediately
+      await supabase
+        .from('user_profiles')
+        .update({
+          dear_ones: updatedDearOnes as unknown as Json
+        })
+        .eq('id', user.id);
+      
+      toast.success("Photo updated successfully");
+      setSelectedDearOne(null);
+    } catch (error) {
+      console.error("Error updating photo:", error);
+      toast.error("Failed to update photo");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveDearOne = (id: string) => {
@@ -195,6 +307,36 @@ const Profile = () => {
     } catch (error) {
       console.error("Error signing out:", error);
     }
+  };
+
+  const toggleVoiceNotifications = () => {
+    const voiceService = VoiceReminderService.getInstance();
+    const isEnabled = voiceService.toggleEnabled();
+    
+    setNotificationSettings(prev => ({
+      ...prev,
+      voice: isEnabled
+    }));
+    
+    toast.success(isEnabled ? "Voice notifications enabled" : "Voice notifications disabled");
+    
+    if (isEnabled) {
+      voiceService.speak("Voice notifications are now enabled. I'll remind you to take your medications.");
+    }
+  };
+
+  const handleDearOnePhotoClick = (id: string) => {
+    setSelectedDearOne(id);
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
+  };
+
+  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedDearOne) return;
+    
+    await handleUpdateDearOnePhoto(selectedDearOne, file);
   };
 
   if (isLoading) {
@@ -372,6 +514,17 @@ const Profile = () => {
                         }
                       />
                     </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-medium">Voice Reminders</h4>
+                        <p className="text-sm text-gray-500">Get voice reminders with personalized messages</p>
+                      </div>
+                      <Switch 
+                        checked={notificationSettings.voice}
+                        onCheckedChange={toggleVoiceNotifications}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
                 
@@ -408,8 +561,17 @@ const Profile = () => {
                     <div>
                       <h3 className="text-lg font-medium mb-2">My Dear Ones</h3>
                       <p className="text-sm text-gray-500 mb-4">
-                        Add the names of loved ones who motivate you to stay healthy
+                        Add the names and photos of loved ones who motivate you to stay healthy
                       </p>
+                      
+                      {/* Hidden file input for updating photos */}
+                      <input 
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileInputChange}
+                      />
                       
                       {/* List of current dear ones */}
                       <div className="space-y-2 mb-6">
@@ -422,14 +584,22 @@ const Profile = () => {
                               className="flex items-center justify-between p-3 border rounded-lg"
                             >
                               <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                  {person.image_url ? (
-                                    <AvatarImage src={person.image_url} alt={person.name} />
-                                  ) : null}
-                                  <AvatarFallback className="bg-primary/20 text-primary">
-                                    {person.name.charAt(0)}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <div className="relative group">
+                                  <Avatar className="h-10 w-10">
+                                    {person.image_url ? (
+                                      <AvatarImage src={person.image_url} alt={person.name} />
+                                    ) : null}
+                                    <AvatarFallback className="bg-primary/20 text-primary">
+                                      {person.name.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <button
+                                    className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-full flex items-center justify-center transition-opacity"
+                                    onClick={() => handleDearOnePhotoClick(person.id)}
+                                  >
+                                    <Camera className="h-4 w-4 text-white" />
+                                  </button>
+                                </div>
                                 <div>
                                   <h4 className="font-medium">{person.name}</h4>
                                   <p className="text-xs text-gray-500">{person.relation}</p>
@@ -479,11 +649,45 @@ const Profile = () => {
                           </div>
                         </div>
                         
+                        <div className="space-y-2">
+                          <Label htmlFor="dearOnePhoto">Photo (Optional)</Label>
+                          <div className="flex items-center gap-4">
+                            {newDearOne.image_preview ? (
+                              <div className="relative w-16 h-16 rounded-full overflow-hidden border">
+                                <img 
+                                  src={newDearOne.image_preview} 
+                                  alt="Preview" 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : null}
+                            <Input
+                              id="dearOnePhoto"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              fileUploadLabel={newDearOne.image_file ? newDearOne.image_file.name : "Upload photo..."}
+                              className="h-12 text-base"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Adding a photo creates a stronger emotional connection
+                          </p>
+                        </div>
+                        
                         <Button 
                           onClick={handleAddDearOne}
                           className="mt-2"
+                          disabled={isUploading}
                         >
-                          Add Person
+                          {isUploading ? (
+                            <>
+                              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                              Uploading...
+                            </>
+                          ) : (
+                            "Add Person"
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -491,7 +695,7 @@ const Profile = () => {
                     <Button 
                       className="w-full rounded-xl h-12 text-base"
                       onClick={handleSaveProfile}
-                      disabled={isSaving}
+                      disabled={isSaving || isUploading}
                     >
                       {isSaving ? "Saving..." : "Save All Changes"}
                     </Button>
