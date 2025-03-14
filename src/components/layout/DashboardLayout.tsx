@@ -1,294 +1,232 @@
 
-import { useAuth } from "@/lib/auth/AuthContext";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { 
-  Bell, Pill, Calendar, Camera, 
-  LogOut, Menu, X, HeartPulse, User, BellRing
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-media-query"; 
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { ReactNode, useState, useEffect } from "react";
 import { BottomNavigation } from "./BottomNavigation";
+import { UserRound, BellRing, Settings } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, signOut, loading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [unreadNotifications, setUnreadNotifications] = useState(2);
+  const [scrolled, setScrolled] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      title: "Medication Reminder",
+      message: "Time to take your morning medications",
+      time: "1 hour ago",
+      read: false,
+      type: "medication"
+    },
+    {
+      id: 2,
+      title: "Health Update",
+      message: "Your blood pressure readings look good this week",
+      time: "3 hours ago",
+      read: false,
+      type: "health"
+    },
+    {
+      id: 3, 
+      title: "Appointment Reminder",
+      message: "You have a doctor's appointment tomorrow at 10:00 AM",
+      time: "Yesterday",
+      read: true,
+      type: "appointment"
+    }
+  ]);
 
+  const markAllAsRead = () => {
+    setNotifications(notifications.map(notification => ({ ...notification, read: true })));
+    toast.success("All notifications marked as read");
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    // Mark the notification as read
+    setNotifications(notifications.map(n => 
+      n.id === notification.id ? { ...n, read: true } : n
+    ));
+
+    // Navigate based on notification type
+    switch (notification.type) {
+      case "medication":
+        navigate("/medications");
+        break;
+      case "health":
+        navigate("/health-tracking");
+        break;
+      case "appointment":
+        navigate("/schedule");
+        break;
+      default:
+        break;
+    }
+
+    // Close the notifications panel
+    setNotificationsOpen(false);
+  };
+
+  // Track scroll position to change header style
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user) {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (data && !error) {
-          setUserProfile(data);
-        }
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
       }
     };
 
-    fetchUserProfile();
-  }, [user]);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [scrolled]);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Signed out successfully");
-      navigate("/");
-    } catch (error) {
-      toast.error("Failed to sign out");
-    }
-  };
-
-  const menuItems = [
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: <HeartPulse className="h-6 w-6" />,
-    },
-    {
-      name: "My Medications",
-      path: "/medications",
-      icon: <Pill className="h-6 w-6" />,
-    },
-    {
-      name: "Reminders",
-      path: "/reminders",
-      icon: <Bell className="h-6 w-6" />,
-    },
-    {
-      name: "Identify Pill",
-      path: "/identify",
-      icon: <Camera className="h-6 w-6" />,
-    },
-    {
-      name: "Profile",
-      path: "/profile",
-      icon: <User className="h-6 w-6" />,
-    },
-  ];
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
-
-  useEffect(() => {
-    closeMenu();
-  }, [location.pathname]);
-
-  if (loading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <HeartPulse className="h-16 w-16 text-primary-600 animate-pulse-slow" />
-            <div className="absolute inset-0 bg-primary-200 blur-2xl opacity-30 rounded-full -z-10"></div>
-          </div>
-          <p className="mt-6 text-primary-700 font-medium text-lg">Loading your care dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // Calculate unread notification count
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-4">
-          <div className="flex items-center gap-2">
-            <Link to="/dashboard" className="flex items-center gap-2 transition-transform hover:scale-105">
-              <div className="bg-gradient-to-br from-primary-400 to-primary-600 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm">
-                <HeartPulse className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">
+      <header 
+        className={cn(
+          "sticky top-0 z-30 transition-all duration-200",
+          scrolled 
+            ? "bg-white/80 backdrop-blur-md shadow-sm h-16" 
+            : "bg-white h-20"
+        )}
+      >
+        <div className="h-full max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 p-2 shadow-md">
+              <HeartPulseIcon className="h-6 w-6 text-white" />
+            </div>
+            
+            <Link to="/dashboard" className="flex items-center">
+              <span className={cn(
+                "text-xl font-bold transition-all", 
+                scrolled 
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500" 
+                  : "bg-gradient-to-r from-amber-400 to-orange-600",
+                "bg-clip-text text-transparent"
+              )}>
                 MediCompanion
-              </h1>
+              </span>
             </Link>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Button 
-                variant="ghost"
-                size="icon"
-                className="rounded-full h-9 w-9 text-slate-700 hover:bg-slate-100"
-                onClick={() => navigate('/reminders')}
-              >
-                <BellRing className="h-5 w-5" />
-                {unreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-error-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                    {unreadNotifications}
-                  </span>
-                )}
-              </Button>
-            </div>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden h-9 w-9 rounded-full text-slate-700 hover:bg-slate-100"
+          <div className="flex items-center gap-1 md:gap-4">
+            <button
+              onClick={() => setNotificationsOpen(true)}
+              className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+              <BellRing className="w-5 h-5 text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
             
-            {/* Desktop user menu */}
-            <div className="hidden md:flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="rounded-full h-9 font-normal text-slate-700 hover:bg-slate-100"
-                onClick={() => navigate('/profile')}
-              >
-                <span className="h-7 w-7 bg-gradient-to-br from-primary-300 to-primary-500 rounded-full flex items-center justify-center text-white mr-2">
-                  {userProfile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                </span>
-                <span className="truncate max-w-32">
-                  {userProfile?.full_name || user?.email?.split('@')[0] || 'User'}
-                </span>
-              </Button>
-            </div>
+            <Link
+              to="/profile"
+              className="w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-2 flex items-center gap-2 rounded-full hover:bg-gray-100"
+            >
+              <Avatar className="w-8 h-8">
+                <AvatarImage src="" alt="User" />
+                <AvatarFallback className="bg-primary-100 text-primary-800">
+                  {user?.email?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="hidden md:inline-block text-sm font-medium text-gray-700">
+                {user?.email?.split('@')[0] || "Profile"}
+              </span>
+            </Link>
+            
+            <Link
+              to="/settings"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+            >
+              <Settings className="w-5 h-5 text-gray-600" />
+            </Link>
           </div>
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar for desktop */}
-        <aside 
-          className={cn(
-            "w-64 bg-white border-r border-slate-100 h-[calc(100vh-64px)] sticky top-16 flex-shrink-0 hidden md:block",
-          )}
-        >
-          <div className="flex flex-col h-full">
-            <nav className="flex-1 overflow-y-auto py-6 px-3">
-              <ul className="space-y-1.5">
-                {menuItems.map((item) => (
-                  <li key={item.path}>
-                    <Link 
-                      to={item.path} 
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                        location.pathname === item.path 
-                          ? "bg-primary-50 text-primary-700 border-l-4 border-primary-600 pl-2" 
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                      )}
-                    >
-                      <div className={cn(
-                        "p-1.5 rounded-md",
-                        location.pathname === item.path 
-                          ? "bg-primary-100 text-primary-700" 
-                          : "text-slate-500"
-                      )}>
-                        {item.icon}
-                      </div>
-                      <span>{item.name}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            
-            <div className="p-4 border-t border-slate-100">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Mobile menu */}
-        {isMobile && isMenuOpen && (
-          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={closeMenu}>
-            <div 
-              className="fixed top-16 right-0 bottom-0 w-72 bg-white shadow-xl animate-scale-in"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-col h-full">
-                <div className="p-4 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold shadow-md">
-                      {userProfile?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-slate-900">{userProfile?.full_name || user?.email?.split('@')[0] || 'User'}</span>
-                      <span className="text-xs text-slate-500">Senior</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <nav className="flex-1 overflow-y-auto py-4 px-3">
-                  <ul className="space-y-1">
-                    {menuItems.map((item) => (
-                      <li key={item.path}>
-                        <Link 
-                          to={item.path} 
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                            location.pathname === item.path 
-                              ? "bg-primary-50 text-primary-700" 
-                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                          )}
-                        >
-                          <div className={cn(
-                            "p-1.5 rounded-md",
-                            location.pathname === item.path 
-                              ? "bg-primary-100 text-primary-700" 
-                              : "text-slate-500"
-                          )}>
-                            {item.icon}
-                          </div>
-                          <span className="font-medium">{item.name}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-                
-                <div className="p-4 border-t border-slate-100">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start text-slate-600"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Main content */}
-        <main className={cn(
-          "flex-1 p-4 md:p-6 max-w-5xl mx-auto w-full animate-fade-in",
-          isMobile ? "pb-24" : "" // Add padding at the bottom for mobile to accommodate the navigation bar
-        )}>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:flex-row">
+        <main className="flex-1 py-6 px-4 md:px-6 max-w-6xl mx-auto w-full pb-24 md:pb-6">
           {children}
         </main>
       </div>
 
-      {/* Bottom Navigation for Mobile */}
+      {/* Footer navigation */}
       <BottomNavigation />
+
+      {/* Notifications Sheet */}
+      <Sheet open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <SheetContent className="w-full sm:max-w-md">
+          <SheetHeader className="flex flex-row items-center justify-between">
+            <SheetTitle>Notifications</SheetTitle>
+            <button className="text-sm text-primary hover:underline" onClick={markAllAsRead}>
+              Mark all as read
+            </button>
+          </SheetHeader>
+          <div className="mt-6 space-y-2">
+            {notifications.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No notifications
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                    notification.read ? "bg-gray-50" : "bg-amber-50"
+                  } hover:bg-amber-100`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex justify-between items-start">
+                    <h3 className={`text-sm font-medium ${!notification.read ? "text-amber-800" : "text-gray-800"}`}>
+                      {notification.title}
+                    </h3>
+                    <span className="text-xs text-gray-500">{notification.time}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
+  );
+}
+
+// Heart pulse icon for the logo
+function HeartPulseIcon({ className }: { className?: string }) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+      <path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27" />
+    </svg>
   );
 }
