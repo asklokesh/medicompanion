@@ -10,13 +10,14 @@ import { Palette, Check, Moon, Sun, Monitor } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/hooks/next-themes";
 
 const ThemeSettings = () => {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [primaryColor, setPrimaryColor] = useState("blue");
   const [fontSize, setFontSize] = useState("medium");
   const [highContrast, setHighContrast] = useState(false);
-  const [theme, setTheme] = useState("light");
   const [saving, setSaving] = useState(false);
 
   // Mock data for theme preferences (in a real app, this would be stored in a database)
@@ -36,39 +37,22 @@ const ThemeSettings = () => {
   ];
 
   useEffect(() => {
-    // This is a simplified example - in a real app, you'd store these preferences in a database
-    const savedTheme = localStorage.getItem("theme") || "light";
+    // Load saved preferences
     const savedColor = localStorage.getItem("primaryColor") || "blue";
     const savedFontSize = localStorage.getItem("fontSize") || "medium";
     const savedContrast = localStorage.getItem("highContrast") === "true";
     
-    setTheme(savedTheme);
     setPrimaryColor(savedColor);
     setFontSize(savedFontSize);
     setHighContrast(savedContrast);
     
-    // Apply the saved theme
-    applyTheme(savedTheme, savedColor, savedFontSize, savedContrast);
-  }, []);
+    // Apply the saved preferences
+    applyTheme(theme, savedColor, savedFontSize, savedContrast);
+  }, [theme]);
 
   const applyTheme = (newTheme: string, newColor: string, newFontSize: string, newContrast: boolean) => {
     const root = document.documentElement;
     const selectedColor = colorOptions.find(color => color.id === newColor)?.value || colorOptions[0].value;
-    
-    // Apply theme (light/dark)
-    if (newTheme === "dark") {
-      root.classList.add("dark");
-      root.style.setProperty("--background", "240 10% 3.9%");
-      root.style.setProperty("--foreground", "0 0% 98%");
-      root.style.setProperty("--card", "240 10% 3.9%");
-      root.style.setProperty("--card-foreground", "0 0% 98%");
-    } else {
-      root.classList.remove("dark");
-      root.style.setProperty("--background", "0 0% 100%");
-      root.style.setProperty("--foreground", "222.2 84% 4.9%");
-      root.style.setProperty("--card", "0 0% 100%");
-      root.style.setProperty("--card-foreground", "222.2 84% 4.9%");
-    }
     
     // Apply primary color
     root.style.setProperty("--primary", selectedColor);
@@ -105,7 +89,6 @@ const ThemeSettings = () => {
     setSaving(true);
     
     // Save to localStorage
-    localStorage.setItem("theme", theme);
     localStorage.setItem("primaryColor", primaryColor);
     localStorage.setItem("fontSize", fontSize);
     localStorage.setItem("highContrast", highContrast.toString());
@@ -145,7 +128,7 @@ const ThemeSettings = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Theme Settings</h1>
+          <h1 className="text-2xl font-bold text-foreground">Theme Settings</h1>
         </div>
 
         <Card>
@@ -206,7 +189,7 @@ const ThemeSettings = () => {
                       />
                       <Label
                         htmlFor={`color-${color.id}`}
-                        className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 hover:border-gray-300 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-card p-4 hover:bg-accent/50 hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                       >
                         <div
                           className="h-6 w-6 rounded-full mb-2"
@@ -235,7 +218,7 @@ const ThemeSettings = () => {
                       />
                       <Label
                         htmlFor={`font-${size.id}`}
-                        className="flex items-center justify-center rounded-md border-2 border-muted bg-white p-4 hover:bg-gray-50 hover:border-gray-300 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        className="flex items-center justify-center rounded-md border-2 border-muted bg-card p-4 hover:bg-accent/50 hover:border-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                       >
                         <span className="text-sm font-medium">{size.label}</span>
                       </Label>

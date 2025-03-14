@@ -106,14 +106,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [notifications]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header 
         className={cn(
           "sticky top-0 z-30 transition-all duration-200",
           scrolled 
-            ? "bg-white/80 backdrop-blur-md shadow-sm h-16" 
-            : "bg-white h-20"
+            ? "bg-background/80 backdrop-blur-md shadow-sm h-16" 
+            : "bg-background h-20"
         )}
       >
         <div className="h-full max-w-6xl mx-auto px-4 md:px-6 flex items-center justify-between">
@@ -138,9 +138,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-1 md:gap-4">
             <button
               onClick={() => setNotificationsOpen(true)}
-              className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+              className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <BellRing className="w-5 h-5 text-gray-600" />
+              <BellRing className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               {unreadCount > 0 && (
                 <span className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
                   {unreadCount}
@@ -150,24 +150,24 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             
             <Link
               to="/profile"
-              className="w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-2 flex items-center gap-2 rounded-full hover:bg-gray-100"
+              className="w-10 h-10 md:w-auto md:h-auto md:px-3 md:py-2 flex items-center gap-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <Avatar className="w-8 h-8">
                 <AvatarImage src="" alt="User" />
-                <AvatarFallback className="bg-primary-100 text-primary-800">
+                <AvatarFallback className="bg-primary-100 text-primary-800 dark:bg-primary-800 dark:text-primary-100">
                   {user?.email?.charAt(0)?.toUpperCase() || "U"}
                 </AvatarFallback>
               </Avatar>
-              <span className="hidden md:inline-block text-sm font-medium text-gray-700">
+              <span className="hidden md:inline-block text-sm font-medium text-foreground">
                 {user?.email?.split('@')[0] || "Profile"}
               </span>
             </Link>
             
             <Link
               to="/theme-settings"
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <Settings className="w-5 h-5 text-gray-600" />
+              <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
             </Link>
           </div>
         </div>
@@ -194,7 +194,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </SheetHeader>
           <div className="mt-6 space-y-2">
             {notifications.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 No notifications
               </div>
             ) : (
@@ -202,17 +202,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <div
                   key={notification.id}
                   className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                    notification.read ? "bg-gray-50" : "bg-amber-50"
-                  } hover:bg-amber-100`}
+                    notification.read 
+                      ? "bg-gray-50 dark:bg-gray-800" 
+                      : "bg-amber-50 dark:bg-amber-900/30"
+                  } hover:bg-amber-100 dark:hover:bg-amber-900/50`}
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex justify-between items-start">
-                    <h3 className={`text-sm font-medium ${!notification.read ? "text-amber-800" : "text-gray-800"}`}>
+                    <h3 className={`text-sm font-medium ${
+                      !notification.read 
+                        ? "text-amber-800 dark:text-amber-300" 
+                        : "text-gray-800 dark:text-gray-200"
+                    }`}>
                       {notification.title}
                     </h3>
-                    <span className="text-xs text-gray-500">{notification.time}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{notification.time}</span>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
                 </div>
               ))
             )}

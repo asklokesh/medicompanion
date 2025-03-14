@@ -46,6 +46,47 @@
     
     --radius: 0.75rem;
   }
+
+  .dark {
+    --background: 20 15% 10%;
+    --foreground: 30 25% 98%;
+    --card: 20 15% 15%;
+    --card-foreground: 30 25% 98%;
+    --popover: 20 15% 15%;
+    --popover-foreground: 30 25% 98%;
+    
+    /* Slightly brighter primary in dark mode */
+    --primary: 30 90% 60%;
+    --primary-foreground: 20 15% 10%;
+    --primary-50: 30 40% 15%;
+    --primary-100: 30 40% 20%;
+    --primary-200: 30 40% 25%;
+    --primary-300: 30 40% 35%;
+    --primary-400: 30 70% 45%;
+    --primary-500: 30 90% 60%;
+    --primary-600: 30 100% 65%;
+    --primary-700: 30 100% 70%;
+    --primary-800: 30 100% 80%;
+    --primary-900: 30 100% 90%;
+    
+    /* Darker secondary in dark mode */
+    --secondary: 35 30% 25%;
+    --secondary-foreground: 30 25% 98%;
+    
+    --muted: 35 20% 25%;
+    --muted-foreground: 30 20% 75%;
+    
+    /* Slightly muted accent in dark mode */
+    --accent: 210 80% 50%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 20 15% 25%;
+    --input: 20 15% 25%;
+    --ring: 30 85% 60%;
+  }
 }
 
 @layer base {
@@ -200,7 +241,7 @@
   }
   
   .glass {
-    @apply bg-white/80 backdrop-blur-lg border border-white/20;
+    @apply bg-white/80 backdrop-blur-lg border border-white/20 dark:bg-black/30 dark:border-white/10;
   }
   
   .card-gradient {
@@ -222,7 +263,7 @@
   
   /* Modern card styles */
   .card-modern {
-    @apply rounded-2xl bg-white shadow-card border border-slate-100 transition-shadow hover:shadow-card-hover p-6;
+    @apply rounded-2xl bg-card shadow-card border border-border transition-shadow hover:shadow-card-hover p-6;
   }
   
   /* Interactive buttons */
@@ -248,7 +289,7 @@
   }
   
   .status-dot.inactive {
-    @apply bg-gray-300;
+    @apply bg-gray-300 dark:bg-gray-600;
   }
   
   /* Gradient backgrounds */
@@ -277,6 +318,12 @@
 
 .health-gradient {
   background: linear-gradient(135deg, #fffbeb, #fef3c7, #fed7aa, #ffedd5);
+  background-size: 400% 400%;
+  animation: gradient 10s ease infinite;
+}
+
+.dark .health-gradient {
+  background: linear-gradient(135deg, #433b20, #463d1f, #453420, #46341e);
   background-size: 400% 400%;
   animation: gradient 10s ease infinite;
 }
