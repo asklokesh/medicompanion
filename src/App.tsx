@@ -23,6 +23,7 @@ import BrainGames from "./pages/BrainGames";
 import Reminders from "./pages/Reminders";
 import HealthTracking from "./pages/HealthTracking";
 import AdminConfig from "./pages/AdminConfig";
+import ThemeSettings from "./pages/ThemeSettings";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/connect" element={<CaregiverConnect />} />
               <Route path="/admin/config" element={<AdminConfig />} />
               <Route path="/schedule" element={<Schedule />} />
+              <Route path="/theme-settings" element={<ThemeSettings />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
