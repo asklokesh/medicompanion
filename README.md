@@ -1,7 +1,6 @@
 
 # MediHelper: Smart Medication Management App
 
-
 ## Overview
 
 MediHelper is a comprehensive web application designed to help senior citizens and individuals with complex medication regimens manage their health more effectively. The application offers intuitive tools for medication management, appointment tracking, pill identification, health monitoring, and caregiver communication.
