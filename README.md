@@ -1,6 +1,25 @@
 
 # MediHelper: Smart Medication Management App
 
+<div align="center">
+
+# Medicompanion
+
+[![GitHub stars](https://img.shields.io/github/stars/asklokesh/medicompanion?style=social)](https://github.com/asklokesh/medicompanion/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/asklokesh/medicompanion?style=social)](https://github.com/asklokesh/medicompanion/network)
+[![GitHub watchers](https://img.shields.io/github/watchers/asklokesh/medicompanion?style=social)](https://github.com/asklokesh/medicompanion/watchers)
+
+[![License](https://img.shields.io/github/license/asklokesh/medicompanion?style=for-the-badge)](https://github.com/asklokesh/medicompanion/blob/main/LICENSE)
+[![Issues](https://img.shields.io/github/issues/asklokesh/medicompanion?style=for-the-badge)](https://github.com/asklokesh/medicompanion/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/asklokesh/medicompanion?style=for-the-badge)](https://github.com/asklokesh/medicompanion/pulls)
+[![Last Commit](https://img.shields.io/github/last-commit/asklokesh/medicompanion?style=for-the-badge)](https://github.com/asklokesh/medicompanion/commits)
+
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/asklokesh/medicompanion?style=flat-square)](https://github.com/asklokesh/medicompanion/pulse)
+[![Code Size](https://img.shields.io/github/languages/code-size/asklokesh/medicompanion?style=flat-square)](https://github.com/asklokesh/medicompanion)
+[![Contributors](https://img.shields.io/github/contributors/asklokesh/medicompanion?style=flat-square)](https://github.com/asklokesh/medicompanion/graphs/contributors)
+
+</div>
+
 ## Overview
 
 MediHelper is a comprehensive web application designed to help senior citizens and individuals with complex medication regimens manage their health more effectively. The application offers intuitive tools for medication management, appointment tracking, pill identification, health monitoring, and caregiver communication.
