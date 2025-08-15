@@ -46,7 +46,7 @@ const IdentifyPill = () => {
     setMatchingPills([]);
     
     try {
-      const results = await identifyPillFromImage(imageFile);
+      const results = await identifyPillFromImage(imageFile, searchPillsByText);
       setMatchingPills(results);
       
       if (results.length > 0) {

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { RecordHealthMetricModal } from "@/components/health/RecordHealthMetricModal";
 import { DeviceIntegrationModal } from "@/components/health/DeviceIntegrationModal";
+import { HealthMetricChart } from "@/components/health/HealthMetricChart";
 
 const HealthTracking = () => {
   const { user } = useAuth();
@@ -188,31 +189,40 @@ const HealthTracking = () => {
           </Card>
         </div>
         
-        <Card className="hover:shadow-md transition-all">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Weekly Health Trends</span>
-              <Button variant="outline" size="sm" className="flex items-center gap-1 border-amber-200 text-amber-700">
-                <LineChart className="h-4 w-4" /> Weekly View
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={healthData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="bp" stroke="#F59E0B" fill="#F59E0B" fillOpacity={0.2} name="Blood Pressure" />
-                  <Area type="monotone" dataKey="pulse" stroke="#EA580C" fill="#EA580C" fillOpacity={0.2} name="Heart Rate" />
-                  <Area type="monotone" dataKey="glucose" stroke="#EF4444" fill="#EF4444" fillOpacity={0.2} name="Blood Glucose" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <HealthMetricChart
+            title="Blood Pressure (Systolic)"
+            data={healthData}
+            dataKey="bp"
+            strokeColor="#F59E0B"
+            fillColor="#F59E0B"
+            unit="mmHg"
+          />
+          <HealthMetricChart
+            title="Heart Rate"
+            data={healthData}
+            dataKey="pulse"
+            strokeColor="#EA580C"
+            fillColor="#EA580C"
+            unit="BPM"
+          />
+          <HealthMetricChart
+            title="Blood Glucose"
+            data={healthData}
+            dataKey="glucose"
+            strokeColor="#EF4444"
+            fillColor="#EF4444"
+            unit="mg/dL"
+          />
+           <HealthMetricChart
+            title="Weight"
+            data={healthData}
+            dataKey="weight"
+            strokeColor="#3B82F6"
+            fillColor="#3B82F6"
+            unit="lbs"
+          />
+        </div>
         
         <div className="p-6 bg-gradient-to-r from-amber-50 to-red-50 rounded-xl shadow-sm">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">

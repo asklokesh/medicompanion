@@ -3,12 +3,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, subDays, isSameDay } from "date-fns";
+import { getMedicationInteractions, type Interaction } from "@/services/medicationService";
 
 interface Medication {
   id: string;
   name: string;
   dosage: string;
   time_of_day: string[];
+  rxcui?: string;
 }
 
 interface MedicationLog {
@@ -33,6 +35,7 @@ export const useDashboardData = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [currentMedications, setCurrentMedications] = useState<Medication[]>([]);
   const [medicationLogs, setMedicationLogs] = useState<MedicationLog[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
 
@@ -159,71 +162,104 @@ export const useDashboardData = () => {
       }
     };
 
-    Promise.all([
-      fetchUserProfile(),
-      fetchMedications().then(fetchMedicationLogs) // Fetch logs after medications
-    ]).finally(() => {
-      setLoading(false);
-    });
+    const fetchData = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // Fetch all data in a more sequential and robust way
+        const userProfilePromise = fetchUserProfile();
+        const medicationsPromise = fetchMedications();
+
+        // Wait for profile and medications
+        await Promise.all([userProfilePromise, medicationsPromise]);
+
+        // Now that medications are fetched, fetch logs and interactions
+        const logsPromise = fetchMedicationLogs();
+        const interactionsPromise = fetchInteractions();
+        await Promise.all([logsPromise, interactionsPromise]);
+
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchInteractions = async () => {
+      if (medications.length > 1) {
+        const rxcuis = medications.map(med => med.rxcui).filter(Boolean) as string[];
+        if (rxcuis.length > 1) {
+          const interactionResults = await getMedicationInteractions(rxcuis);
+          setInteractions(interactionResults);
+        }
+      }
+    };
+
+    fetchData();
   }, [user, timeOfDay]);
 
-  const markMedicationsTaken = async () => {
+  const updateMedicationStatus = async (medicationId: string, status: 'taken' | 'skipped') => {
+    if (!user) return;
+
+    const newLog = {
+      medication_id: medicationId,
+      user_id: user.id,
+      status: status,
+      taken_at: new Date().toISOString(),
+    };
+
+    // Optimistically update the UI
+    const newLogEntry: MedicationLog = { ...newLog, id: `temp-${Date.now()}` };
+    setMedicationLogs(prevLogs => [...prevLogs, newLogEntry]);
+
     try {
-      const logs = currentMedications.map(med => ({
-        medication_id: med.id,
-        user_id: user?.id,
-        status: 'taken' as const,
-        taken_at: new Date().toISOString()
-      }));
+      const { error } = await supabase.from('medication_logs').insert(newLog);
 
-      if (logs.length > 0) {
-        const { data, error } = await supabase
-          .from('medication_logs')
-          .insert(logs);
-
-        if (error) throw error;
-        
-        // Fetch updated logs to recalculate streak
-        const thirtyDaysAgo = subDays(new Date(), 30);
-        
-        const { data: updatedLogs, error: fetchError } = await supabase
-          .from('medication_logs')
-          .select('*')
-          .eq('user_id', user?.id)
-          .gte('taken_at', thirtyDaysAgo.toISOString())
-          .order('taken_at', { ascending: false });
-          
-        if (!fetchError && updatedLogs) {
-          const typedLogs: MedicationLog[] = updatedLogs.map(log => ({
-            id: log.id,
-            medication_id: log.medication_id,
-            status: log.status as 'taken' | 'skipped' | 'missed',
-            taken_at: log.taken_at
-          }));
-          setMedicationLogs(typedLogs);
-          
-          // Recalculate streak after updating logs
-          calculateStreak(typedLogs);
-        }
-        
-        return true;
+      if (error) {
+        console.error("Error updating medication status:", error);
+        // Revert optimistic update on error
+        setMedicationLogs(prevLogs => prevLogs.filter(log => log.id !== newLogEntry.id));
+        toast({
+          title: "Update Failed",
+          description: "Could not update medication status. Please try again.",
+          variant: "destructive",
+        });
+        return;
       }
-      return false;
+
+      // Fetch updated logs to get the real ID and recalculate streak
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      const { data: updatedLogs, error: fetchError } = await supabase
+        .from('medication_logs')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('taken_at', thirtyDaysAgo.toISOString())
+        .order('taken_at', { ascending: false });
+
+      if (!fetchError && updatedLogs) {
+        const typedLogs: MedicationLog[] = updatedLogs.map(log => ({
+          id: log.id,
+          medication_id: log.medication_id,
+          status: log.status as 'taken' | 'skipped' | 'missed',
+          taken_at: log.taken_at
+        }));
+        setMedicationLogs(typedLogs);
+        calculateStreak(typedLogs);
+      }
     } catch (error) {
-      console.error("Error marking medications as taken:", error);
-      return false;
+      console.error("Error in updateMedicationStatus:", error);
+      // Revert optimistic update on error
+      setMedicationLogs(prevLogs => prevLogs.filter(log => log.id !== newLogEntry.id));
     }
   };
 
-  const isCurrentMedicationTaken = (medId: string) => {
-    return medicationLogs.some(log => 
-      log.medication_id === medId && log.status === 'taken'
+  const isMedicationTakenToday = (medicationId: string, time: string) => {
+    return medicationLogs.some(log =>
+      log.medication_id === medicationId &&
+      isSameDay(new Date(log.taken_at), new Date()) &&
+      log.status === 'taken'
+      // We could also check against time of day if logs had that info
     );
-  };
-
-  const allCurrentMedicationsTaken = () => {
-    return currentMedications.length > 0 && 
-      currentMedications.every(med => isCurrentMedicationTaken(med.id));
   };
 
   return {
@@ -233,10 +269,10 @@ export const useDashboardData = () => {
     medicationLogs,
     loading,
     timeOfDay,
-    markMedicationsTaken,
-    isCurrentMedicationTaken,
-    allCurrentMedicationsTaken,
-    streak
+    updateMedicationStatus,
+    isMedicationTakenToday,
+    streak,
+    interactions
   };
 };
 

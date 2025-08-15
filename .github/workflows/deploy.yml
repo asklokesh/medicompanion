@@ -1,0 +1,144 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload production build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build
+          path: dist
+
+  deploy-android:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Download production build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build
+          path: dist
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Sync web assets to Android
+        run: npx cap sync android
+
+      - name: Build Android App Bundle (AAB)
+        run: cd android && ./gradlew bundleRelease
+
+      - name: Sign Android App Bundle
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: android/app/build/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_SIGNING_KEY }}
+          alias: ${{ secrets.ANDROID_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        # NOTE: This step will fail without the required secrets being set in the repository.
+        # These secrets (ANDROID_SIGNING_KEY, ANDROID_ALIAS, etc.) must be created
+        # in your GitHub repository settings under "Secrets and variables" > "Actions".
+
+      - name: Deploy to Google Play (Internal Testing)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.medicompanion.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
+        # NOTE: This step will also fail without the GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret.
+        # This secret contains the JSON key for a Google Cloud service account that has
+        # permissions to upload releases to the Google Play Console.
+
+  deploy-ios:
+    needs: build-and-test
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Download production build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: production-build
+          path: dist
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Sync web assets to iOS
+        run: npx cap sync ios
+
+      - name: Build and Deploy to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          apple-id: ${{ secrets.APPLE_ID }}
+          app-specific-password: ${{ secrets.APP_SPECIFIC_PASSWORD }}
+          team-id: ${{ secrets.APPLE_TEAM_ID }}
+          project-path: "ios/App/App.xcworkspace"
+          scheme: "App"
+          # The following secrets are base64 encoded certificate and provisioning profile files
+          p12-base64: ${{ secrets.IOS_DIST_P12_BASE64 }}
+          p12-password: ${{ secrets.IOS_DIST_P12_PASSWORD }}
+          mobileprovision-base64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        # NOTE: This step will fail without the required secrets being set in the repository.
+        # These secrets must be created in your GitHub repository settings. This includes
+        # your Apple ID, an app-specific password, your team ID, and base64 encoded
+        # versions of your distribution certificate (.p12) and provisioning profile.
