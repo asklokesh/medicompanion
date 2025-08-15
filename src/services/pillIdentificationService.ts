@@ -215,67 +215,112 @@ async function searchRxNavAPI(searchQuery: string): Promise<PillMatch[]> {
 }
 
 /**
- * Process and analyze a pill image to identify potential matches
- * In a production app, this would connect to a machine learning service or specialized API
+ * Converts an image file to a base64 encoded string.
  */
-export async function identifyPillFromImage(imageFile: File): Promise<PillMatch[]> {
+function toBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      // Result is in the format "data:image/jpeg;base64,LzlqLzRBQ...".
+      // We only need the part after the comma.
+      const base64String = (reader.result as string).split(',')[1];
+      resolve(base64String);
+    };
+    reader.onerror = error => reject(error);
+  });
+}
+
+/**
+ * Process and analyze a pill image to identify potential matches
+ * using Google Vision API for OCR and then our existing text search.
+ */
+export async function identifyPillFromImage(
+  imageFile: File,
+  textSearcher: (query: string) => Promise<PillMatch[]>
+): Promise<PillMatch[]> {
+  console.log("Processing pill image for identification via Google Vision API...");
+  const apiKey = import.meta.env.VITE_GOOGLE_VISION_API_KEY;
+
+  if (!apiKey) {
+    console.error("Google Vision API key is missing.");
+    toast({
+      title: "Configuration Error",
+      description: "Image recognition service is not configured. Please contact support.",
+      variant: "destructive"
+    });
+    return getFallbackResults("demo");
+  }
+
   try {
-    console.log("Processing pill image for identification");
-    
-    // In a real implementation, we would upload the image to a service like
-    // NIH Pill Image Recognition, Google Vision API, or a specialized pill identification API
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // For now, return fallback/demo data
-    // This simulates what we'd get back from an actual image recognition API
-    const mockResults: PillMatch[] = [
+    const base64Image = await toBase64(imageFile);
+
+    const requestBody = {
+      requests: [
+        {
+          image: {
+            content: base64Image,
+          },
+          features: [
+            {
+              type: "TEXT_DETECTION",
+            },
+          ],
+        },
+      ],
+    };
+
+    const response = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
       {
-        id: "image-pill-1",
-        name: "Lisinopril 10mg",
-        appearance: "Round white tablet with 'L10' imprint",
-        purpose: "Blood pressure medication (ACE inhibitor)",
-        imageColor: "bg-orange-100",
-        manufacturer: "Major Pharmaceuticals",
-        source: "Image Recognition"
-      },
-      {
-        id: "image-pill-2",
-        name: "Atorvastatin 20mg",
-        appearance: "Oval white tablet with 'PD 157' imprint",
-        purpose: "Cholesterol medication (Statin)",
-        imageColor: "bg-yellow-100",
-        manufacturer: "Pfizer",
-        source: "Image Recognition"
-      },
-      {
-        id: "image-pill-3",
-        name: "Metformin 500mg",
-        appearance: "Round white tablet with '500' on one side",
-        purpose: "Diabetes medication",
-        imageColor: "bg-amber-100",
-        manufacturer: "Amneal Pharmaceuticals",
-        source: "Image Recognition"
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       }
-    ];
-    
-    // Log activity to Supabase if connected
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.json();
+      console.error("Google Vision API error:", errorBody);
+      throw new Error("Failed to call Google Vision API.");
+    }
+
+    const data = await response.json();
+    const textAnnotation = data.responses?.[0]?.fullTextAnnotation;
+
+    if (textAnnotation && textAnnotation.text) {
+      const extractedText = textAnnotation.text.replace(/\n/g, " ");
+      console.log(`Extracted text from image: "${extractedText}"`);
+      toast({
+        title: "Text Recognized",
+        description: `Found text: "${extractedText}". Now searching for matching pills.`,
+      });
+      // Use the injected text searcher function
+      return textSearcher(extractedText);
+    } else {
+      console.log("No text found in the image.");
+      toast({
+        title: "No Text Found",
+        description: "Could not read any text from the image. Please try a clearer picture or search manually.",
+      });
+      return [];
+    }
+  } catch (error) {
+    console.error("Error processing pill image:", error);
+    toast({
+      title: "Image Processing Error",
+      description: "An error occurred while analyzing the image. Please try again.",
+      variant: "destructive"
+    });
+    return [];
+  } finally {
     try {
       await logActivity('pill_image_search');
     } catch (e) {
       console.error("Failed to log image search activity:", e);
     }
-    
-    return mockResults;
-  } catch (error) {
-    console.error("Error processing pill image:", error);
-    toast({
-      title: "Image Processing Error",
-      description: "Unable to identify the pill from the image. Please try searching by text instead.",
-      variant: "destructive"
-    });
-    return [];
   }
 }
 

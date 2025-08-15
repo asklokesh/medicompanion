@@ -97,26 +97,23 @@ describe('useDashboardData', () => {
     });
   });
 
-  it('should mark medications as taken', async () => {
+  it('should update a medication status to "taken"', async () => {
     const { result } = renderHook(() => useDashboardData());
 
+    // Wait for initial data load to finish
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    act(() => {
-        result.current.currentMedications.push({id: 'med1', name: 'Aspirin', dosage: '100mg', time_of_day: ['morning']});
-    });
-
+    // Call the function to test
     await act(async () => {
-        await result.current.markMedicationsTaken();
+      await result.current.updateMedicationStatus('med1', 'taken');
     });
 
-    expect(logsInsertMock).toHaveBeenCalled();
-    expect(logsInsertMock).toHaveBeenCalledWith(expect.arrayContaining([
-        expect.objectContaining({
-            medication_id: 'med1',
-            status: 'taken',
-            user_id: mockUser.id
-        })
-    ]));
+    // Assert that the insert mock was called with the correct payload
+    expect(logsInsertMock).toHaveBeenCalledWith({
+      medication_id: 'med1',
+      status: 'taken',
+      user_id: mockUser.id,
+      taken_at: expect.any(String), // The timestamp is generated inside the function
+    });
   });
 });

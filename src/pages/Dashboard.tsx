@@ -3,10 +3,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { UserProfileCard } from "@/components/dashboard/UserProfileCard";
-import { CurrentMedicationsCard } from "@/components/dashboard/CurrentMedicationsCard";
 import { EmptyMedicationsCard } from "@/components/dashboard/EmptyMedicationsCard";
 import { QuickAccessGrid } from "@/components/dashboard/QuickAccessGrid";
 import { DashboardLoading } from "@/components/dashboard/DashboardLoading";
+import { InteractionAlertCard } from "@/components/dashboard/InteractionAlertCard";
+import { InteractiveMedicationList } from "@/components/dashboard/InteractiveMedicationList";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -17,10 +18,10 @@ const Dashboard = () => {
     currentMedications,
     loading,
     timeOfDay,
-    markMedicationsTaken,
-    isCurrentMedicationTaken,
-    allCurrentMedicationsTaken,
-    streak
+    updateMedicationStatus,
+    isMedicationTakenToday,
+    streak,
+    interactions
   } = useDashboardData();
 
   if (loading) {
@@ -30,18 +31,18 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6 animate-fade-in">
+        <InteractionAlertCard interactions={interactions} />
         <UserProfileCard 
           userProfile={userProfile} 
           user={user} 
           streak={streak} 
         />
 
-        <CurrentMedicationsCard 
+        <InteractiveMedicationList
           currentMedications={currentMedications}
-          isCurrentMedicationTaken={isCurrentMedicationTaken}
-          allCurrentMedicationsTaken={allCurrentMedicationsTaken}
+          updateMedicationStatus={updateMedicationStatus}
+          isMedicationTakenToday={isMedicationTakenToday}
           timeOfDay={timeOfDay}
-          markMedicationsTaken={markMedicationsTaken}
         />
 
         {medications.length === 0 && <EmptyMedicationsCard />}

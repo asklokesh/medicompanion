@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Sun, Moon, Sunrise, Sunset } from "lucide-react";
 
 const AddMedication = () => {
   const { user } = useAuth();
@@ -31,19 +32,11 @@ const AddMedication = () => {
   const [notes, setNotes] = useState("");
 
   const timeOptions = [
-    { id: "morning", label: "Morning" },
-    { id: "afternoon", label: "Afternoon" },
-    { id: "evening", label: "Evening" },
-    { id: "night", label: "Night" }
+    { id: "morning", label: "Morning", icon: <Sunrise className="h-5 w-5" /> },
+    { id: "afternoon", label: "Afternoon", icon: <Sun className="h-5 w-5" /> },
+    { id: "evening", label: "Evening", icon: <Sunset className="h-5 w-5" /> },
+    { id: "night", label: "Night", icon: <Moon className="h-5 w-5" /> }
   ];
-
-  const handleTimeOfDayChange = (timeId: string, checked: boolean) => {
-    if (checked) {
-      setTimeOfDay([...timeOfDay, timeId]);
-    } else {
-      setTimeOfDay(timeOfDay.filter(id => id !== timeId));
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,72 +89,76 @@ const AddMedication = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Medication Name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., Lisinopril"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="dosage">Dosage</Label>
-                <Input
-                  id="dosage"
-                  placeholder="e.g., 10mg"
-                  value={dosage}
-                  onChange={(e) => setDosage(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="frequency">Frequency</Label>
-                <Select
-                  value={frequency}
-                  onValueChange={setFrequency}
-                >
-                  <SelectTrigger id="frequency">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Once daily">Once daily</SelectItem>
-                    <SelectItem value="Twice daily">Twice daily</SelectItem>
-                    <SelectItem value="Three times daily">Three times daily</SelectItem>
-                    <SelectItem value="Four times daily">Four times daily</SelectItem>
-                    <SelectItem value="As needed">As needed</SelectItem>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Time of Day</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {timeOptions.map((time) => (
-                    <div key={time.id} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`time-${time.id}`} 
-                        checked={timeOfDay.includes(time.id)}
-                        onCheckedChange={(checked) => 
-                          handleTimeOfDayChange(time.id, checked as boolean)
-                        }
-                      />
-                      <Label 
-                        htmlFor={`time-${time.id}`}
-                        className="text-sm font-normal"
-                      >
-                        {time.label}
-                      </Label>
-                    </div>
-                  ))}
+              <div className="space-y-4">
+                <Label className="text-lg font-semibold">Medication Details</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Medication Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="e.g., Lisinopril"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
                 </div>
-                {timeOfDay.length === 0 && (
-                  <p className="text-sm text-red-500">Please select at least one time of day</p>
-                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="dosage">Dosage</Label>
+                  <Input
+                    id="dosage"
+                    placeholder="e.g., 10mg"
+                    value={dosage}
+                    onChange={(e) => setDosage(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-4 pt-4 border-t">
+                <Label className="text-lg font-semibold">Scheduling</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="frequency">Frequency</Label>
+                  <Select
+                    value={frequency}
+                    onValueChange={setFrequency}
+                  >
+                    <SelectTrigger id="frequency">
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Once daily">Once daily</SelectItem>
+                      <SelectItem value="Twice daily">Twice daily</SelectItem>
+                      <SelectItem value="Three times daily">Three times daily</SelectItem>
+                      <SelectItem value="Four times daily">Four times daily</SelectItem>
+                      <SelectItem value="As needed">As needed</SelectItem>
+                      <SelectItem value="Weekly">Weekly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Time of Day</Label>
+                  <ToggleGroup
+                    type="multiple"
+                    value={timeOfDay}
+                    onValueChange={setTimeOfDay}
+                    className="grid grid-cols-2 gap-2"
+                  >
+                    {timeOptions.map((time) => (
+                      <ToggleGroupItem
+                        key={time.id}
+                        value={time.id}
+                        className="h-16 flex flex-col gap-1"
+                        aria-label={time.label}
+                      >
+                        {time.icon}
+                        <span>{time.label}</span>
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                  {timeOfDay.length === 0 && (
+                    <p className="text-sm text-red-500 pt-1">Please select at least one time of day</p>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">
