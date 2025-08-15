@@ -159,12 +159,28 @@ export const useDashboardData = () => {
       }
     };
 
-    Promise.all([
-      fetchUserProfile(),
-      fetchMedications().then(fetchMedicationLogs) // Fetch logs after medications
-    ]).finally(() => {
-      setLoading(false);
-    });
+    const fetchData = async () => {
+      if (!user) return;
+      setLoading(true);
+      try {
+        // Fetch all data in a more sequential and robust way
+        const userProfilePromise = fetchUserProfile();
+        const medicationsPromise = fetchMedications();
+
+        // Wait for profile and medications
+        await Promise.all([userProfilePromise, medicationsPromise]);
+
+        // Now that medications are fetched, fetch logs which depends on them
+        await fetchMedicationLogs();
+
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [user, timeOfDay]);
 
   const markMedicationsTaken = async () => {
